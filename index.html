@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Live Wrapper</title>
+    <style>
+      * {
+        box-sizing:border-box;
+      }
+      body {
+        padding: .5em 1em;
+        background: rgb(45 32 47);
+        color: white;
+        font-family: sans-serif;
+
+      }
+      a {
+        color:white;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background:
+      }
+      .item {
+        margin: 2em 0;
+        padding: 1.5em;
+        background: rgba(0,0,0,.02);
+        border: 1px solid rgba(0,0,0,.06);
+        border-radius: 5px;
+      }
+      .placeholder {
+        aspect-ratio: 16/9;
+        background: rgba(255,255,255,.02);
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin:0 0 2em 0;
+      }
+      .debug, .debug * {
+        color: rgba(255,255,255,.3)
+      }
+  </style>
+  </head>
+  <body>
+    <article class="container">
+      <mux-livestream-wrapper
+        start="Wed Oct 10 2022 16:48:00 GMT+0200 (CEST)"
+        end="Wed Oct 10 2022 17:48:00 GMT+0200 (CEST)"
+        duration="3600"
+        >
+        <div slot="start">
+          <h1>Preshow Banner</h1>
+          <div data-countdown></div>
+          <div data-countdown-clock></div>
+        </div>
+        <div slot="player">
+          <h1>Player</h1>
+        </div>
+        <div slot="end">
+          <h1>Postshow Banner</h1>
+        </div>
+      </mux-livestream-wrapper>
+    </article>
+  </body>
+
+<script type="module" src="https://unpkg.com/@mux/mux-player/dist/mux-player.mjs"></script>
+<script type="module">
+class LiveStreamWrapper extends HTMLElement {
+  #isInit = false;
+  #divs;
+  #intervals = {
+    clock: undefined,
+  };
+
+  #start; // ISO 8601
+  #end;
+  #duration; // in seconds.
+
+  #isLive = false; // Override to show the player regardless of time.
+
+  #time = {};
+
+  css = `<style>
+    .hidden {
+      display: none;
+    }
+  </style>`;
+
+  constructor() {
+    super();
+
+    if (this.isConnected) {
+      this.#init();
+    }
+  }
+
+  static get observedAttributes() {
+    return [
+      'start',
+      'end',
+      'duration',
+      'is-live'
+    ];
+  }
+
+  attributeChangedCallback() {
+    this.#create();
+  }
+
+  set start(item) {
+    this.setAttribute('start', item);
+  }
+  set end(item) {
+    this.setAttribute('end', item);
+  }
+  set duration(item) {
+    this.setAttribute('duration', item);
+  }
+  set isLive(item) {
+    this.setAttribute('is-live', item);
+  }
+
+
+  get time() {
+    return this.#time;
+  }
+  get relativeStart() {
+    return this.#time.relativeStart;
+  }
+  get countdownClock() {
+    return this.#time.countdownClock;
+  }
+
+  connectedCallback() {
+    this.#init();
+  }
+
+  #init() {
+    if (this.#isInit) {
+      this.#create();
+      return;
+    }
+    this.#isInit = true;
+
+    const template = document.createElement('template');
+
+    template.innerHTML = `
+      ${this.css}
+      <section id="root"></section>
+      <slot name="start"></slot>
+      <slot name="end"></slot>
+      <slot name="player"></slot>
+    `;
+
+    const shadow = this.attachShadow({ mode: 'open' });
+    const html = template.content.cloneNode(true);
+    shadow.appendChild(html);
+
+    this.#divs = {
+      root: this.shadowRoot?.querySelector('#root'),
+      start: this.shadowRoot?.querySelector('slot[name=start]'),
+      end: this.shadowRoot?.querySelector('slot[name=end]'),
+      player: this.shadowRoot?.querySelector('slot[name=player]'),
+      countdown: this.querySelector('[data-countdown]'),
+      countdownClock: this.querySelector('[data-countdown-clock]'),
+    };
+
+    this.#create();
+  }
+
+  #create() {
+
+    this.#start    = this.getAttribute('start') || '';
+    this.#end      = this.getAttribute('end') || '';
+    this.#duration = this.getAttribute('duration') || '';
+
+    const startTime = new Date(this.#start);
+    // TODO, check if valid date.
+
+    this.setStart();
+
+    this.#clock();
+    this.#intervals.clock = setInterval(() => this.#clock(), 100);
+  }
+
+  #statusCheck(start, end) {
+    const now = new Date();
+    switch(true) {
+      case now < start:
+        console.log('Event has not started yet');
+        showPlaceholder();
+        break;
+
+      case now > end:
+        console.log('Event over.');
+        showPlaceholder();
+        break;
+
+      case now > start:
+        console.log('Event is Live.')
+        let offset = (now - start) / 1000;
+        if (!hasStarted) {
+          document.querySelector('#entry').innerHTML = createEntryHTML(entry);
+          let player = document.querySelector('mux-player');
+          hidePlaceholder();
+          hasStarted = true;
+          player.onended = () => {
+            console.log('Player event, ended');
+            removeVideo();
+            showPlaceholder();
+          }
+        }
+        let player = document.querySelector('mux-player');
+        if (player) player.onplay = () => player.currentTime = offset;
+
+        break;
+    }
+  }
+  setStart() {
+    this.#showPregame();
+    this.#hidePlayer();
+    this.#hidePostgame();
+  }
+  setLive() {
+    this.#hidePregame();
+    this.#showPlayer();
+    this.#hidePostgame();
+  }
+  setEnd() {
+    this.#hidePregame();
+    this.#hidePlayer();
+    this.#showPostgame();
+  }
+  #showPregame() {
+    this.#divs.start.classList.remove('hidden');
+  }
+  #hidePregame() {
+    this.#divs.start.classList.add('hidden');
+  }
+  #showPlayer() {
+    this.#divs.player.classList.remove('hidden');
+  }
+  #hidePlayer() {
+    this.#divs.player.classList.add('hidden');
+  }
+  #showPostgame() {
+    this.#divs.end.classList.remove('hidden');
+  }
+  #hidePostgame() {
+    this.#divs.end.classList.add('hidden');
+  }
+
+  #clock() {
+    if (this.#start) {
+      let start = new Date(this.#start);
+      this.#time.relativeStart  = this.#getRelativeTimeDistance(start);
+      this.#time.countdownClock = this.#getCountdownClock(start);
+      this.#time.startlocaltime = this.#startLocalTime(this.#start);
+      this.#time.startlocaldate = this.#startLocalDate(this.#start);
+
+      if (this.#divs.countdown) {
+        this.#divs.countdown.innerHTML = this.#time.relativeStart;
+      }
+      if (this.#divs.countdownClock) {
+        this.#divs.countdownClock.innerHTML = this.#time.countdownClock;
+      }
+    } else {
+      console.debug('No start time set.');
+    }
+  }
+
+// Pure Functions
+  #getRelativeTimeDistance(d1, d2 = new Date(new Date(this.#start))) {
+    const units = {
+      year  : 24 * 60 * 60 * 1000 * 365,
+      month : 24 * 60 * 60 * 1000 * 365/12,
+      day   : 24 * 60 * 60 * 1000,
+      hour  : 60 * 60 * 1000,
+      minute: 60 * 1000,
+      second: 1000
+    }
+    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+    const elapsed = d1 - d2;
+    for (var u in units)
+      if (Math.abs(elapsed) > units[u] || u == 'second')
+        return rtf.format(Math.round(elapsed/units[u]),u)
+  }
+  #startLocalTime(time) {
+    return new Date(time).toLocaleTimeString('en-us',{timeZoneName:'short', hour: 'numeric', minute: '2-digit'});
+  }
+  #startLocalDate(time) {
+    return new Date(time).toLocaleDateString('en-us',{month: 'long', day: 'numeric', year: 'numeric'});
+  }
+  #getCountdownClock(countDownDate) {
+
+    let now = new Date().getTime();
+
+    const distance = countDownDate - now;
+    let hours  = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    let sec    = Math.floor((distance % (1000 * 60)) / 1000);
+
+    if (sec < 10) sec = "0"+sec;
+    if (mins < 10) mins = "0"+mins;
+
+    return `${hours || '00'}:${mins || '00'}:${sec || '00'}`;
+  } 
+
+}
+window.customElements.define('mux-livestream-wrapper', LiveStreamWrapper);
+
+</script>
+</html>
