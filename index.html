@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Live Wrapper</title>
+    <!--<link href="vidstack.css" rel="stylesheet" type="text/css">-->
     <style>
       * {
         box-sizing:border-box;
@@ -17,13 +18,19 @@
         font-family: sans-serif;
 
       }
+      livestream-wrapper:not(:defined) {
+        visibility: hidden;
+      }
+      livestream-wrapper {
+        background:rgba(0,0,0,0.2);
+        display: block;
+      }
       a {
         color:white;
       }
       .container {
         max-width: 600px;
         margin: 0 auto;
-        background:
       }
       .item {
         margin: 2em 0;
@@ -44,46 +51,166 @@
       .debug, .debug * {
         color: rgba(255,255,255,.3)
       }
+      .playerblock {
+        display: flex;
+        aspect-ratio: 16/9;
+        background: rgba(0,0,0,.3);
+        align-items: center;
+      }
+      .landing {
+        justify-content: center;
+      }
+      .landing button {
+        font-size: 2em;
+        background: rgba(0,0,0,.15);
+        border: none;
+        color: white;
+        padding: 1.5em 1.2em;
+        border-radius: 50%;
+      }
+      .landing button:hover {
+        cursor: pointer;
+        background: rgba(31, 17, 30, 0.8)
+      }
+      .end, .start {
+        padding: 2em;
+      }
+      .fadeOut {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s 300ms, opacity 300ms ease-in-out;
+      }
+      .fadeIn {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s 300ms, opacity 300ms ease-in-out;
+      }      
+      vds-media:not(:defined) {
+        visibility: hidden;
+      }
   </style>
   </head>
   <body>
     <article class="container">
-      <mux-livestream-wrapper
-        start="Wed Oct 10 2022 16:48:00 GMT+0200 (CEST)"
-        end="Wed Oct 10 2022 17:48:00 GMT+0200 (CEST)"
-        duration="3600"
+
+      <livestream-wrapper
+        start="Fri Oct 07 2022 23:36:00 GMT-0500"
+        end="Fri Oct 07 2022 23:38:00 GMT-0500"
         >
-        <div slot="start">
-          <h1>Preshow Banner</h1>
-          <div data-countdown></div>
-          <div data-countdown-clock></div>
+
+        <div slot="landing" class="landing playerblock">
+          <button data-click>Play</button>
         </div>
-        <div slot="player">
-          <h1>Player</h1>
+
+        <div slot="start" class="start playerblock">
+          <section>
+            <h1>Preshow Banner</h1>
+            <ul>
+              <li><span data-countdown-clock></span></li>
+              <li><span data-countdown></span></li>
+              <li><span data-localDate></span></li>
+              <li><span data-localTime></span></li>
+            </ul>
+          </section>
         </div>
-        <div slot="end">
-          <h1>Postshow Banner</h1>
+
+        <div slot="player" class="live playerblock" style="aspect-ratio:16/9;width:100%">
+          <vds-media autoplay>
+            <vds-media-sync>
+            <vds-video controls autoplay poster="https://media-files.vidstack.io/poster.png" style="aspect-ratio:16/9;width:100%">
+              <video controls autoplay src="https://media-files.vidstack.io/720p.mp4" style="aspect-ratio:16/9"></video>
+            </vds-video>
+            <!--
+            <div class="meda-controls">
+              <vds-play-button>
+                <div class="media-play">Play</div>
+                <div class="media-pause">Pause</div>
+              </vds-play-button>
+              <vds-time-slider>
+                <div class="slider-track"></div>
+                <div class="slider-track fill"></div>
+                <div class="slider-thumb-container">
+                  <div class="slider-thumb"></div>
+                </div>
+                <div class="media-preview-container">
+                  <vds-slider-video src="https://media-files.vidstack.io/240p.mp4"></vds-slider-video>
+                  <vds-slider-value-text type="pointer" format="time"></vds-slider-value-text>
+                </div>
+              </vds-time-slider>
+            </div>
+
+            <div class="media-buffering-container">
+              <svg class="media-buffering-icon" fill="none" viewBox="0 0 120 120" aria-hidden="true">
+                <circle
+                  class="media-buffering-track"
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  stroke="currentColor"
+                  stroke-width="8"
+                ></circle>
+                <circle
+                  class="media-buffering-track-fill"
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  stroke="currentColor"
+                  stroke-width="10"
+                  pathLength="100"
+                ></circle>
+              </svg>
+            </div>
+            -->
+
+            </vds-media-sync>
+          </vds-media>
         </div>
-      </mux-livestream-wrapper>
+
+        <div slot="end" class="end playerblock">
+          <h1>The Event is Over, Thanks for Watching</h1>
+        </div>
+      </livestream-wrapper>
+
+      <hr />
+
+      <h4>Testing</h4>
+      <label>Start <input type="datetime-local" id="start"></label>
+      <label>End <input type="datetime-local" id="end"></label>
+      <button id="setTime">Set</button>
+
     </article>
   </body>
 
-<script type="module" src="https://unpkg.com/@mux/mux-player/dist/mux-player.mjs"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/bundle.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-media.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-media-sync.js"></script>
+  <!--
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-play-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-buffering-indicator.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-slider-video.js"></script>
+  -->
+
 <script type="module">
 class LiveStreamWrapper extends HTMLElement {
   #isInit = false;
   #divs;
-  #intervals = {
-    clock: undefined,
-  };
-
+  #intervals = {};
   #start; // ISO 8601
   #end;
   #duration; // in seconds.
-
+  #isLiveToVOD = false; // Bool to show video once over.
   #isLive = false; // Override to show the player regardless of time.
-
   #time = {};
+  #status = 'inital';
+
+  #hasInteracted = false; // TODO User clicks on the div to have at least 1 interaction for autoplay.
+
+  #hasStarted = false;
+  #isWaiting  = false;
+  #isOver = false;
+
+  #isEndOverride = false;
+  #hasSeeked = false;
 
   css = `<style>
     .hidden {
@@ -93,10 +220,26 @@ class LiveStreamWrapper extends HTMLElement {
 
   constructor() {
     super();
-
     if (this.isConnected) {
       this.#init();
     }
+
+    /* We still want the clock running if the real clock is still ticking.
+    window.addEventListener("offline", () => {
+      this.#stopClock();
+    });
+    window.addEventListener("online", () => {
+      this.#startClock();
+    });
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.#startClock();
+      } else {
+        this.#stopClock();
+      }
+    });
+    */
+
   }
 
   static get observedAttributes() {
@@ -104,7 +247,8 @@ class LiveStreamWrapper extends HTMLElement {
       'start',
       'end',
       'duration',
-      'is-live'
+      'is-live',
+      'live-to-vod'
     ];
   }
 
@@ -122,9 +266,11 @@ class LiveStreamWrapper extends HTMLElement {
     this.setAttribute('duration', item);
   }
   set isLive(item) {
-    this.setAttribute('is-live', item);
+    this.setAttribute('is-live', item); // Works with being a bool?
   }
-
+  set liveToVod(item) {
+    this.setAttribute('live-to-vod', item); // Works with being a bool?
+  }
 
   get time() {
     return this.#time;
@@ -134,6 +280,12 @@ class LiveStreamWrapper extends HTMLElement {
   }
   get countdownClock() {
     return this.#time.countdownClock;
+  }
+  get start() {
+    return this.#start;
+  }
+  get end() {
+    return this.#end
   }
 
   connectedCallback() {
@@ -152,6 +304,7 @@ class LiveStreamWrapper extends HTMLElement {
     template.innerHTML = `
       ${this.css}
       <section id="root"></section>
+      <slot name="landing"></slot>
       <slot name="start"></slot>
       <slot name="end"></slot>
       <slot name="player"></slot>
@@ -163,11 +316,14 @@ class LiveStreamWrapper extends HTMLElement {
 
     this.#divs = {
       root: this.shadowRoot?.querySelector('#root'),
+      landing: this.shadowRoot?.querySelector('slot[name=landing]'),
       start: this.shadowRoot?.querySelector('slot[name=start]'),
       end: this.shadowRoot?.querySelector('slot[name=end]'),
       player: this.shadowRoot?.querySelector('slot[name=player]'),
       countdown: this.querySelector('[data-countdown]'),
       countdownClock: this.querySelector('[data-countdown-clock]'),
+      localTime: this.querySelector('[data-localtime]'),
+      localDate: this.querySelector('[data-localDate]'),
     };
 
     this.#create();
@@ -175,66 +331,185 @@ class LiveStreamWrapper extends HTMLElement {
 
   #create() {
 
-    this.#start    = this.getAttribute('start') || '';
+    this.#start    = this.getAttribute('start') || ''; // Required.
     this.#end      = this.getAttribute('end') || '';
     this.#duration = this.getAttribute('duration') || '';
+    this.#isLiveToVOD = this.getAttribute('live-to-vod');
 
-    const startTime = new Date(this.#start);
-    // TODO, check if valid date.
+    if (!this.#start) {
+      console.error('A start date is required.');
+      this.#event('error', 'Missing a start date.', {});
+      this.setLive();
+      return;
+    }
 
-    this.setStart();
+    // Convert to dates.
+    this.#start = new Date(this.#start);
+    if (this.#end) this.#end = new Date(this.#end);
 
-    this.#clock();
-    this.#intervals.clock = setInterval(() => this.#clock(), 100);
+    // Check if dates are valid.
+    if (!this.#isValidDate(this.#start)) {
+      console.error('Not able to determine the start date.')
+      this.#event('error', 'Not able to determine the start date.', {});
+      return;
+    }
+    if (this.#end && !this.#isValidDate(this.#end)) {
+      this.#event('error', 'Invalid End Date formatting.', {});
+    }
+
+    // Start is before end.
+    if (this.#end) {
+      if (this.#start > this.#end) {
+        console.warn('Event start is after end date.');
+        this.#event('error', 'Event start is after end date.', {});
+        this.#end = undefined;
+      }
+    }
+
+    // Duration is a number.
+    if (this.#duration) {
+      this.#duration = Number(this.#duration);
+      if (isNaN(this.#duration)) {
+        console.warn( `Duration is not a number we can use: "${this.getAttribute('duration')}"`)
+        this.#event('error', `Duration is not a number we can use: "${this.getAttribute('duration')}"`, {})
+        this.#duration = undefined;
+      }
+    }
+
+    // attribute boolean fix. live-to-vod="false" will be false.
+    if (this.#isLiveToVOD) {
+      this.#isLiveToVOD = this.#isLiveToVOD === 'false' ? false : true;
+    }
+
+    if (!this.#end && this.#duration) {
+      let end = new Date();
+      this.#end = new Date(end.setSeconds(this.#start.getSeconds() + this.#duration));
+    }
+    if (!this.#end && !this.#duration) {
+      let maybeVideo = this.querySelector('video');
+      if (maybeVideo) {
+        this.#end = maybeVideo.duration;
+      } else {
+        let end = new Date();
+        this.#end = new Date(end.setSeconds(this.#start.getSeconds() + 10));
+      }
+    }
+    if (!this.#end && !this.#duration) {
+      console.warn('No end date or duration set, will try using the video ending event.');
+    }
+
+    if (this.#getState(this.#start, this.#end) === 'end') {
+      this.setEnd();
+      return;
+    }
+
+    this.setLanding();
+    const startButton = this.querySelector('[data-click]');
+    startButton.onclick = async () => {
+      this.#hasInteracted = true;
+      await this.#fadeOut(startButton);
+      this.#startClock();
+      this.setStart();
+      this.#setState(this.#start, this.#end);
+    }
   }
 
-  #statusCheck(start, end) {
+  #getState(start, end) {
     const now = new Date();
     switch(true) {
       case now < start:
-        console.log('Event has not started yet');
-        showPlaceholder();
-        break;
+        return 'pre';
 
-      case now > end:
-        console.log('Event over.');
-        showPlaceholder();
-        break;
+      case now > end || this.#isEndOverride:
+        return 'end';
 
       case now > start:
-        console.log('Event is Live.')
-        let offset = (now - start) / 1000;
-        if (!hasStarted) {
-          document.querySelector('#entry').innerHTML = createEntryHTML(entry);
-          let player = document.querySelector('mux-player');
-          hidePlaceholder();
-          hasStarted = true;
-          player.onended = () => {
-            console.log('Player event, ended');
-            removeVideo();
-            showPlaceholder();
-          }
-        }
-        let player = document.querySelector('mux-player');
-        if (player) player.onplay = () => player.currentTime = offset;
-
-        break;
+        return 'live';
     }
   }
+
+  #setState(start, end) {
+    this.#status = this.#getState(start, end);
+    if (this.#status === 'pre') this.setStart();
+    if (this.#status === 'end') this.setEnd();
+    if (this.#status === 'live') this.setLive();
+  }
+
+  setLanding() {
+    this.#showLanding();
+    this.#hidePregame();
+    this.#hidePlayer();
+    this.#hidePostgame();
+  }
   setStart() {
+    this.#hideLanding();
     this.#showPregame();
     this.#hidePlayer();
     this.#hidePostgame();
+
+    if (!this.#isWaiting) {
+      this.#event('pre', 'Event has not yet started', {});
+      // Make sure video is not already playing in background on page load.
+      if (this.#getState(this.#start, this.#end) === 'pre') {
+        const player = this.querySelector('video');
+        if (player) player.pause();
+      }
+      this.#isWaiting = true;
+    }
   }
   setLive() {
+    this.#hideLanding();
     this.#hidePregame();
     this.#showPlayer();
     this.#hidePostgame();
+
+    if (!this.#isLive) {
+      this.#event('isLive', 'Is Live', {});
+      const player = this.querySelector('video');
+      if (player) {
+        if (player.paused) player.play();
+        player.onplay = () => {
+          //if (!this.#hasSeeked) {
+            this.#event('seeking', 'seeing to wallclock time', {});
+            const offset = (new Date() - this.#start) / 1000;
+            player.currentTime = offset;
+            //this.#hasSeeked = true;
+          //}
+        }
+        player.onended = () => {
+          this.#isEndOverride = true;
+          this.#setState(start, end);
+        }
+      }
+      this.#isLive = true;
+    }
+
   }
   setEnd() {
+    this.#hideLanding();
     this.#hidePregame();
-    this.#hidePlayer();
-    this.#showPostgame();
+    if (!this.#isLiveToVOD) {
+      this.#hidePlayer();
+      this.#showPostgame();
+    }
+    if (this.#isLiveToVOD) {
+      this.#hidePostgame();
+    }
+
+    const player = this.querySelector('video');
+    if (player) player.pause();
+
+    this.#stopClock();
+    if (!this.#isOver) {
+      this.#event('end', 'Event has ended', {});
+      this.#isOver = true;
+    }
+  }
+  #showLanding() {
+    this.#divs.landing.classList.remove('hidden');
+  }
+  #hideLanding() {
+    this.#divs.landing.classList.add('hidden');
   }
   #showPregame() {
     this.#divs.start.classList.remove('hidden');
@@ -249,33 +524,48 @@ class LiveStreamWrapper extends HTMLElement {
     this.#divs.player.classList.add('hidden');
   }
   #showPostgame() {
-    this.#divs.end.classList.remove('hidden');
+    this.#divs.end?.classList.remove('hidden');
   }
   #hidePostgame() {
     this.#divs.end.classList.add('hidden');
   }
 
+  #startClock() {
+    this.#clock();
+    this.#intervals.clock = setInterval(() => this.#clock(), 500);
+  }
+  #stopClock() {
+    clearInterval(this.#intervals.clock);
+  }
   #clock() {
     if (this.#start) {
-      let start = new Date(this.#start);
-      this.#time.relativeStart  = this.#getRelativeTimeDistance(start);
-      this.#time.countdownClock = this.#getCountdownClock(start);
+      this.#time.relativeStart  = this.#getRelativeTimeDistance(this.#start);
+      this.#time.countdownClock = this.#getCountdownClock(this.#start);
       this.#time.startlocaltime = this.#startLocalTime(this.#start);
       this.#time.startlocaldate = this.#startLocalDate(this.#start);
-
       if (this.#divs.countdown) {
         this.#divs.countdown.innerHTML = this.#time.relativeStart;
       }
       if (this.#divs.countdownClock) {
         this.#divs.countdownClock.innerHTML = this.#time.countdownClock;
       }
+      if (this.#divs.localTime) {
+        this.#divs.localTime.innerHTML = this.#time.startlocaltime;
+      }
+      if (this.#divs.localDate) {
+        this.#divs.localDate.innerHTML = this.#time.startlocaldate;
+      }
+
+      // Set state of Block
+      this.#setState(this.#start, this.#end);
+
     } else {
       console.debug('No start time set.');
     }
   }
 
 // Pure Functions
-  #getRelativeTimeDistance(d1, d2 = new Date(new Date(this.#start))) {
+  #getRelativeTimeDistance(d1, d2 = new Date() ) {
     const units = {
       year  : 24 * 60 * 60 * 1000 * 365,
       month : 24 * 60 * 60 * 1000 * 365/12,
@@ -291,10 +581,10 @@ class LiveStreamWrapper extends HTMLElement {
         return rtf.format(Math.round(elapsed/units[u]),u)
   }
   #startLocalTime(time) {
-    return new Date(time).toLocaleTimeString('en-us',{timeZoneName:'short', hour: 'numeric', minute: '2-digit'});
+    return time.toLocaleTimeString('en-us',{timeZoneName:'short', hour: 'numeric', minute: '2-digit'});
   }
   #startLocalDate(time) {
-    return new Date(time).toLocaleDateString('en-us',{month: 'long', day: 'numeric', year: 'numeric'});
+    return time.toLocaleDateString('en-us',{month: 'long', day: 'numeric', year: 'numeric'});
   }
   #getCountdownClock(countDownDate) {
 
@@ -308,11 +598,87 @@ class LiveStreamWrapper extends HTMLElement {
     if (sec < 10) sec = "0"+sec;
     if (mins < 10) mins = "0"+mins;
 
-    return `${hours || '00'}:${mins || '00'}:${sec || '00'}`;
-  } 
+    if (distance > 0) {
+      return `${hours || '00'}:${mins || '00'}:${sec || '00'}`;
+    } else {
+      return `00:00:00`;
+    }
+  }
+  #event(name, details, object) {
+    this.dispatchEvent(new CustomEvent('all', {detail: {"name": name, "message": details, "full": object}}));
+    this.dispatchEvent(new CustomEvent(name, {detail: {"message": details, "full": object}}));
+  }
+
+  #isValidDate(d) {
+    if (Object.prototype.toString.call(d) === "[object Date]") {
+      if (isNaN(d)) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  async #fadeOut(div) {
+    div.classList.add('fadeOut');
+    div.classList.remove('fadeIn');
+    return new Promise(resolve => {
+      div.addEventListener('transitionend', () => {
+        div.remove();
+        resolve();
+      });
+    });
+  }
+  async #fadeIn(div) {
+    div.classList.add('fadeIn');
+    return new Promise(resolve => {
+      div.addEventListener('transitionend', resolve);
+    });
+  }
 
 }
-window.customElements.define('mux-livestream-wrapper', LiveStreamWrapper);
+window.customElements.define('livestream-wrapper', LiveStreamWrapper);
 
 </script>
+
+
+
+<!-- For Testing -->
+<script type="module">
+  const start = document.querySelector('#start');
+  const end = document.querySelector('#end');
+  const livewrap = document.querySelector('livestream-wrapper');
+
+  const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+
+  if (livewrap.start) {
+    let startDate = (new Date(livewrap.start - tzoffset)).toISOString().split('.')[0];
+    start.value = startDate;
+  }
+
+  if (livewrap.end) {
+    let endDate = (new Date(livewrap.end - tzoffset)).toISOString().split('.')[0];
+    end.value = endDate;
+  }
+
+
+  document.querySelector('#setTime').addEventListener('click', () => {
+    livewrap.start = start.value;
+    livewrap.end = end.value;
+  });
+
+  start.addEventListener('change', event => {
+    //livewrap.start = event.target.value;
+  });
+  end.addEventListener('change', event => {
+    //livewrap.end = event.target.value;
+  });
+  livewrap.addEventListener('all', event => {
+    console.log('Event: ', event.detail);
+  });
+
+</script>
+
 </html>
