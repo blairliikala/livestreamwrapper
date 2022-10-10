@@ -1,11 +1,72 @@
-.media-controls {
-  display: flex;
+.sixteen_by_nine {
   width: 100%;
-  padding: 0 8px;
+  aspect-ratio: 16/9;
+}
+.media-controls * {
+  box-sizing: border-box;
+}
+.media-controls {
+  width: 100%;
+  padding: 0;
   position: absolute;
   bottom: 0;
   left: 0;
+  background: rgba(0,0,0,0);
 }
+.controls_row1 {
+}
+.controls_row2 {
+  display: flex;
+  position: relative;
+  padding-bottom: .4em;  
+}
+.group_a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: .5em;
+  position: relative;
+}
+.group_b {
+  display: flex;
+  margin-left: auto;
+  align-items: center;
+  position: relative;
+}
+.group_b .fa-solid, group_a .fa-solid {
+  padding: .5em;
+}
+.media-times {
+  display: flex;
+  align-content: center;
+}
+
+.media-play-icon, .media-pause-icon {
+  font-size: 1.7em;
+  padding-left: .5em;
+  min-width: 2em;
+}
+vds-media[paused] .media-pause-icon {
+  display: none;
+}
+
+vds-media:not([paused]) .media-play-icon {
+  display: none;
+}
+/*****/
+
+
+/****** Mute *****/
+/* Hide mute text when media _is_ muted. */
+vds-media[muted] .media-mute {
+  display: none;
+}
+/* Hide unmute text when media _is not_ muted. */
+vds-media:not([muted]) .media-unmute {
+  display: none;
+}
+/****/
+
 
 /* Hide pause text when media _is_ paused. */
 vds-media[paused] .media-pause {
@@ -70,9 +131,10 @@ vds-media[waiting] .media-buffering-icon {
  */
 
 vds-time-slider {
-  --height: 48px;
-  --thumb-width: 24px;
-  --track-height: 4px;
+  --height: 28px;
+  --thumb-width: 14px;
+  --track-height: 7px;
+  --track-color: #6366f1;
 
   display: flex;
   align-items: center;
@@ -85,7 +147,7 @@ vds-time-slider {
 }
 
 .slider-track {
-  background-color: #6366f1;
+  background-color: var(--track-color);
   width: 100%;
   height: var(--track-height);
   position: absolute;
@@ -200,4 +262,117 @@ vds-slider-value-text {
   padding: 0 8px;
   color: hsl(0, 0%, 70%);
   background-color: black;
+}
+
+
+
+
+
+
+vds-mute-button {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+}
+
+vds-mute-button > svg {
+  /** `absolute` so icons are placed on top of each other. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  transition: opacity ease 150ms;
+}
+
+vds-media:not([muted]) .media-mute-icon {
+  opacity: 0;
+}
+
+vds-media[muted] .media-unmute-icon {
+  opacity: 0;
+}
+
+/**
+ * -----------------------------------------------------------
+ * Volume Slider
+ * -----------------------------------------------------------
+ */
+
+vds-volume-slider {
+  --height: 38px;
+  --thumb-width: 14px;
+  --track-height: 4px;
+
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 150px;
+  height: var(--height);
+  /** Prevent thumb flowing out of slider. */
+  margin: 0 calc(var(--thumb-width) / 2);
+  cursor: pointer;
+}
+
+.slider-track {
+  background-color: #6366f1;
+  width: 100%;
+  height: var(--track-height);
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 0;
+  transform: translateY(-50%);
+}
+
+.slider-track.fill {
+  background-color: #a5b4fc;
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(var(--vds-fill-rate));
+  will-change: transform;
+  z-index: 1; /** above track. */
+}
+
+.slider-thumb-container {
+  position: absolute;
+  top: 0;
+  left: var(--vds-fill-percent);
+  width: var(--thumb-width);
+  height: 100%;
+  transform: translateX(-50%); /** re-center along x-axis. */
+  z-index: 2; /** above track fill. */
+  will-change: left;
+}
+
+vds-volume-slider[dragging] .slider-thumb-container {
+  left: var(--vds-pointer-percent);
+}
+
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--thumb-width);
+  height: var(--thumb-width);
+  border-radius: 9999px;
+  background-color: #fff;
+  transform: translateY(-50%);
+}
+
+/* Avoid double controls on iOS when in fullscreen. */
+vds-media[hide-ui] .media-controls,
+/* Hide controls while media is loading, or user is idle. */
+vds-media:not([can-play]) .media-controls,
+vds-media[user-idle] .media-controls {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Show controls if autoplay fails. */
+vds-media[autoplay-error] .media-controls {
+  opacity: 1;
 }

@@ -1,23 +1,61 @@
-class LiveStreamWrapper extends HTMLElement {
-
-  #start;
+export class LiveStreamWrapper extends HTMLElement {
+  #isInit = false;
+  #divs;
+  #intervals = {};
+  #start; // ISO 8601
   #end;
-  #duration;
+  #duration; // in seconds.
+  #isLiveToVOD = false; // Bool to show video once over.
+  #isLive = false; // Override to show the player regardless of time.
+  #time = {};
+  #status = 'inital';
 
-  css = `<style></style>`;
+  #hasInteracted = false; // TODO User clicks on the div to have at least 1 interaction for autoplay.
+
+  #hasStarted = false;
+  #isWaiting  = false;
+  #isOver = false;
+
+  #isEndOverride = false;
+  #hasSeeked = false;
+
+  css = `<style>
+    .hidden {
+      display: none;
+    }
+  </style>`;
 
   constructor() {
     super();
-
     if (this.isConnected) {
       this.#init();
     }
+
+    /* We still want the clock running if the real clock is still ticking.
+    window.addEventListener("offline", () => {
+      this.#stopClock();
+    });
+    window.addEventListener("online", () => {
+      this.#startClock();
+    });
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.#startClock();
+      } else {
+        this.#stopClock();
+      }
+    });
+    */
+
   }
 
   static get observedAttributes() {
     return [
       'start',
       'end',
+      'duration',
+      'is-live',
+      'live-to-vod'
     ];
   }
 
@@ -25,12 +63,36 @@ class LiveStreamWrapper extends HTMLElement {
     this.#create();
   }
 
-  set playerId(item) {
-    this.setAttribute('player-id', item);
+  set start(item) {
+    this.setAttribute('start', item);
   }
-  get expirationTime() {
-    const { time } = this.#makeSignedPlaybackWarning();
-    return time;
+  set end(item) {
+    this.setAttribute('end', item);
+  }
+  set duration(item) {
+    this.setAttribute('duration', item);
+  }
+  set isLive(item) {
+    this.setAttribute('is-live', item); // Works with being a bool?
+  }
+  set liveToVod(item) {
+    this.setAttribute('live-to-vod', item); // Works with being a bool?
+  }
+
+  get time() {
+    return this.#time;
+  }
+  get relativeStart() {
+    return this.#time.relativeStart;
+  }
+  get countdownClock() {
+    return this.#time.countdownClock;
+  }
+  get start() {
+    return this.#start;
+  }
+  get end() {
+    return this.#end
   }
 
   connectedCallback() {
@@ -49,6 +111,7 @@ class LiveStreamWrapper extends HTMLElement {
     template.innerHTML = `
       ${this.css}
       <section id="root"></section>
+      <slot name="landing"></slot>
       <slot name="start"></slot>
       <slot name="end"></slot>
       <slot name="player"></slot>
@@ -60,79 +123,327 @@ class LiveStreamWrapper extends HTMLElement {
 
     this.#divs = {
       root: this.shadowRoot?.querySelector('#root'),
+      landing: this.shadowRoot?.querySelector('slot[name=landing]'),
       start: this.shadowRoot?.querySelector('slot[name=start]'),
       end: this.shadowRoot?.querySelector('slot[name=end]'),
       player: this.shadowRoot?.querySelector('slot[name=player]'),
+      countdown: this.querySelector('[data-countdown]'),
+      countdownClock: this.querySelector('[data-countdown-clock]'),
+      localTime: this.querySelector('[data-localtime]'),
+      localDate: this.querySelector('[data-localDate]'),
     };
 
     this.#create();
   }
 
-  #create_prev() {
-    this.#params = this.getAttribute('params') || '';
+  #create() {
 
-    if (!this.#buttonTitle) this.#buttonTitle = 'Copy Player Code';
+    this.#start    = this.getAttribute('start') || ''; // Required.
+    this.#end      = this.getAttribute('end') || '';
+    this.#duration = this.getAttribute('duration') || '';
+    this.#isLiveToVOD = this.getAttribute('live-to-vod');
 
-    let playerParams = {};
-    let attributeParams = {};
+    if (!this.#start) {
+      console.error('A start date is required.');
+      this.#event('error', 'Missing a start date.', {});
+      this.setLive();
+      return;
+    }
 
-    if (this.#playback) {
-      const player = document.querySelector(`#${this.#playback}`);
-      if (player && player.hasAttributes()) {
-        for (const attr of player.attributes) {
-          playerParams[attr.name] = attr.value;
+    // Convert to dates.
+    this.#start = new Date(this.#start);
+    if (this.#end) this.#end = new Date(this.#end);
+
+    // Check if dates are valid.
+    if (!this.#isValidDate(this.#start)) {
+      console.error('Not able to determine the start date.')
+      this.#event('error', 'Not able to determine the start date.', {});
+      return;
+    }
+    if (this.#end && !this.#isValidDate(this.#end)) {
+      this.#event('error', 'Invalid End Date formatting.', {});
+    }
+
+    // Start is before end.
+    if (this.#end) {
+      if (this.#start > this.#end) {
+        console.warn('Event start is after end date.');
+        this.#event('error', 'Event start is after end date.', {});
+        this.#end = undefined;
+      }
+    }
+
+    // Duration is a number.
+    if (this.#duration) {
+      this.#duration = Number(this.#duration);
+      if (isNaN(this.#duration)) {
+        console.warn( `Duration is not a number we can use: "${this.getAttribute('duration')}"`)
+        this.#event('error', `Duration is not a number we can use: "${this.getAttribute('duration')}"`, {})
+        this.#duration = undefined;
+      }
+    }
+
+    // attribute boolean fix. live-to-vod="false" will be false.
+    if (this.#isLiveToVOD) {
+      this.#isLiveToVOD = this.#isLiveToVOD === 'false' ? false : true;
+    }
+
+    if (!this.#end && this.#duration) {
+      let end = new Date();
+      this.#end = new Date(end.setSeconds(this.#start.getSeconds() + this.#duration));
+    }
+    if (!this.#end && !this.#duration) {
+      let maybeVideo = this.querySelector('video');
+      if (maybeVideo) {
+        this.#end = maybeVideo.duration;
+      } else {
+        let end = new Date();
+        this.#end = new Date(end.setSeconds(this.#start.getSeconds() + 10));
+      }
+    }
+    if (!this.#end && !this.#duration) {
+      console.warn('No end date or duration set, will try using the video ending event.');
+    }
+
+    if (this.#getState(this.#start, this.#end) === 'end') {
+      this.setEnd();
+      return;
+    }
+
+    this.setLanding();
+    const startButton = this.querySelector('[data-click]');
+    startButton.onclick = async () => {
+      this.#hasInteracted = true;
+      await this.#fadeOut(startButton);
+      this.#startClock();
+      this.setStart();
+      this.#setState(this.#start, this.#end);
+    }
+  }
+
+  #getState(start, end) {
+    const now = new Date();
+    switch(true) {
+      case now < start:
+        return 'pre';
+
+      case now > end || this.#isEndOverride:
+        return 'end';
+
+      case now > start:
+        return 'live';
+    }
+  }
+
+  #setState(start, end) {
+    this.#status = this.#getState(start, end);
+    if (this.#status === 'pre') this.setStart();
+    if (this.#status === 'end') this.setEnd();
+    if (this.#status === 'live') this.setLive();
+  }
+
+  setLanding() {
+    this.#showLanding();
+    this.#hidePregame();
+    this.#hidePlayer();
+    this.#hidePostgame();
+  }
+  setStart() {
+    this.#hideLanding();
+    this.#showPregame();
+    this.#hidePlayer();
+    this.#hidePostgame();
+
+    if (!this.#isWaiting) {
+      this.#event('pre', 'Event has not yet started', {});
+      // Make sure video is not already playing in background on page load.
+      if (this.#getState(this.#start, this.#end) === 'pre') {
+        const player = this.querySelector('video');
+        if (player) player.pause();
+      }
+      this.#isWaiting = true;
+    }
+  }
+  setLive() {
+    this.#hideLanding();
+    this.#hidePregame();
+    this.#showPlayer();
+    this.#hidePostgame();
+
+    if (!this.#isLive) {
+      this.#event('isLive', 'Is Live', {});
+      const player = this.querySelector('video');
+      if (player) {
+        if (player.paused) player.play();
+        player.onplay = () => {
+          //if (!this.#hasSeeked) {
+            this.#event('seeking', 'seeing to wallclock time', {});
+            const offset = (new Date() - this.#start) / 1000;
+            player.currentTime = offset;
+            //this.#hasSeeked = true;
+          //}
+        }
+        player.onended = () => {
+          this.#isEndOverride = true;
+          this.#setState(start, end);
         }
       }
-    }
-
-    if (this.#params) {
-      try {
-        attributeParams = typeof(this.#params) === 'string' ? JSON.parse(this.#params) : this.#params;
-      } catch(e) {
-        console.error(
-          'JSON decode failed. Check the parameter has valid JSON.'
-        );
-      }
-    }
-
-    const params = {
-      ...attributeParams,
-      ...playerParams,
-    };
-
-    this.#hasToken = Object.keys(params).find(key => key === 'playback-token') !== undefined;
-    if (this.#hasToken) {
-      let token = Object.entries(params).find(key => key[0] === 'playback-token' );
-      if (token && token.length > 0) this.#token = token[1];
-    }
-
-    this.#divs.root.innerHTML = '';
-
-    this.#playercode = this.#createCode(params);
-    const codearea = this.#makeCodeArea(this.#playercode);
-    if (this.#showCode) {
-      this.#divs.root.innerHTML += codearea;
-    }
-
-    if (this.#showCode && this.shadowRoot) {
-      this.#divs.code = this.shadowRoot?.querySelector('.code_container');
-      if (this.#divs.code) {
-        this.#setCopyEvent(this.#renderHTML(this.#playercode), this.#divs.code);
-      }
-    }
-
-    if (this.#divs.copyButton && this.#playercode && !this.#copyButtonListenerSet) {
-      this.#setCopyButtonEvent(this.#renderHTML(this.#playercode), this.#divs.copyButton);
-      this.#copyButtonListenerSet = true;
-    }
-    if (this.#copyButton) {
-      this.#divs.copyButton.style.display = 'unset';
-    }
-    if (!this.#copyButton) {
-      this.#divs.copyButton.style.display = 'none';
+      this.#isLive = true;
     }
 
   }
+  setEnd() {
+    this.#hideLanding();
+    this.#hidePregame();
+    if (!this.#isLiveToVOD) {
+      this.#hidePlayer();
+      this.#showPostgame();
+    }
+    if (this.#isLiveToVOD) {
+      this.#hidePostgame();
+    }
+
+    const player = this.querySelector('video');
+    if (player) player.pause();
+
+    this.#stopClock();
+    if (!this.#isOver) {
+      this.#event('end', 'Event has ended', {});
+      this.#isOver = true;
+    }
+  }
+  #showLanding() {
+    this.#divs.landing.classList.remove('hidden');
+  }
+  #hideLanding() {
+    this.#divs.landing.classList.add('hidden');
+  }
+  #showPregame() {
+    this.#divs.start.classList.remove('hidden');
+  }
+  #hidePregame() {
+    this.#divs.start.classList.add('hidden');
+  }
+  #showPlayer() {
+    this.#divs.player.classList.remove('hidden');
+  }
+  #hidePlayer() {
+    this.#divs.player.classList.add('hidden');
+  }
+  #showPostgame() {
+    this.#divs.end?.classList.remove('hidden');
+  }
+  #hidePostgame() {
+    this.#divs.end.classList.add('hidden');
+  }
+
+  #startClock() {
+    this.#clock();
+    this.#intervals.clock = setInterval(() => this.#clock(), 500);
+  }
+  #stopClock() {
+    clearInterval(this.#intervals.clock);
+  }
+  #clock() {
+    if (this.#start) {
+      this.#time.relativeStart  = this.#getRelativeTimeDistance(this.#start);
+      this.#time.countdownClock = this.#getCountdownClock(this.#start);
+      this.#time.startlocaltime = this.#startLocalTime(this.#start);
+      this.#time.startlocaldate = this.#startLocalDate(this.#start);
+      if (this.#divs.countdown) {
+        this.#divs.countdown.innerHTML = this.#time.relativeStart;
+      }
+      if (this.#divs.countdownClock) {
+        this.#divs.countdownClock.innerHTML = this.#time.countdownClock;
+      }
+      if (this.#divs.localTime) {
+        this.#divs.localTime.innerHTML = this.#time.startlocaltime;
+      }
+      if (this.#divs.localDate) {
+        this.#divs.localDate.innerHTML = this.#time.startlocaldate;
+      }
+
+      // Set state of Block
+      this.#setState(this.#start, this.#end);
+
+    } else {
+      console.debug('No start time set.');
+    }
+  }
+
+// Pure Functions
+  #getRelativeTimeDistance(d1, d2 = new Date() ) {
+    const units = {
+      year  : 24 * 60 * 60 * 1000 * 365,
+      month : 24 * 60 * 60 * 1000 * 365/12,
+      day   : 24 * 60 * 60 * 1000,
+      hour  : 60 * 60 * 1000,
+      minute: 60 * 1000,
+      second: 1000
+    }
+    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+    const elapsed = d1 - d2;
+    for (var u in units)
+      if (Math.abs(elapsed) > units[u] || u == 'second')
+        return rtf.format(Math.round(elapsed/units[u]),u)
+  }
+  #startLocalTime(time) {
+    return time.toLocaleTimeString('en-us',{timeZoneName:'short', hour: 'numeric', minute: '2-digit'});
+  }
+  #startLocalDate(time) {
+    return time.toLocaleDateString('en-us',{month: 'long', day: 'numeric', year: 'numeric'});
+  }
+  #getCountdownClock(countDownDate) {
+
+    let now = new Date().getTime();
+
+    const distance = countDownDate - now;
+    let hours  = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    let sec    = Math.floor((distance % (1000 * 60)) / 1000);
+
+    if (sec < 10) sec = "0"+sec;
+    if (mins < 10) mins = "0"+mins;
+
+    if (distance > 0) {
+      return `${hours || '00'}:${mins || '00'}:${sec || '00'}`;
+    } else {
+      return `00:00:00`;
+    }
+  }
+  #event(name, details, object) {
+    this.dispatchEvent(new CustomEvent('all', {detail: {"name": name, "message": details, "full": object}}));
+    this.dispatchEvent(new CustomEvent(name, {detail: {"message": details, "full": object}}));
+  }
+
+  #isValidDate(d) {
+    if (Object.prototype.toString.call(d) === "[object Date]") {
+      if (isNaN(d)) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  async #fadeOut(div) {
+    div.classList.add('fadeOut');
+    div.classList.remove('fadeIn');
+    return new Promise(resolve => {
+      div.addEventListener('transitionend', () => {
+        div.remove();
+        resolve();
+      });
+    });
+  }
+  async #fadeIn(div) {
+    div.classList.add('fadeIn');
+    return new Promise(resolve => {
+      div.addEventListener('transitionend', resolve);
+    });
+  }
 
 }
-window.customElements.define('mux-livestream-wrapper', LiveStreamWrapper);
+window.customElements.define('livestream-wrapper', LiveStreamWrapper);

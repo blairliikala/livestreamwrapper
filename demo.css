@@ -1,0 +1,54 @@
+* {
+  box-sizing:border-box;
+}
+body {
+  padding: .5em 1em;
+  background: rgb(45 32 47);
+  color: white;
+  font-family: sans-serif;
+}
+a {
+  color:white;
+}
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/*** Styles inside the Component ***/
+livestream-wrapper {
+  background:rgba(0,0,0,0.2);
+  display: block;
+}
+.landing {
+  justify-content: center;
+}
+.landing button {
+  font-size: 2em;
+  background: rgba(0,0,0,.3);
+  border: none;
+  color: white;
+  padding: 1.5em 1.2em;
+  border-radius: 50%;
+  box-shadow: 0 0 50px 10px rgba(0,0,0,.3);
+}
+.landing button:hover {
+  cursor: pointer;
+  background: rgba(31, 17, 30, 0.8)
+}
+.landing button:active {
+  box-shadow: 0 0 50px 7px rgba(0,0,0,.2);
+  background: rgba(28, 15, 28, 0.9)
+}
+.playerblock {
+  display: flex;
+  aspect-ratio: 16/9;
+  background: rgba(0,0,0,.3);
+  align-items: center;
+}
+.start, .end {
+  padding: 2em;
+}
+.start {
+  line-height: 1.5em;
+}

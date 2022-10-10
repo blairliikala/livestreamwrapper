@@ -1,0 +1,21 @@
+{
+  "name": "livestreamwrapper",
+  "version": "1.0.0",
+  "description": "A native component to help with the start, playback and ending of live streams, or simulated live streams.",
+  "main": "livestreamthing.js",
+  "module": "livestreamthing.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blairliikala/livestreamwrapper.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blairliikala/livestreamwrapper/issues"
+  },
+  "homepage": "https://github.com/blairliikala/livestreamwrapper#readme"
+}

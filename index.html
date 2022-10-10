@@ -6,74 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Live Wrapper</title>
-    <!--<link href="vidstack.css" rel="stylesheet" type="text/css">-->
-    <style>
-      * {
-        box-sizing:border-box;
-      }
-      body {
-        padding: .5em 1em;
-        background: rgb(45 32 47);
-        color: white;
-        font-family: sans-serif;
+    <link href="vidstack.css" rel="stylesheet" type="text/css">
+    <link href="demo.css" rel="stylesheet" type="text/css">
+    <script src="https://kit.fontawesome.com/41aa90cc96.js" crossorigin="anonymous"></script>
 
-      }
+    <style>
       livestream-wrapper:not(:defined) {
         visibility: hidden;
-      }
-      livestream-wrapper {
-        background:rgba(0,0,0,0.2);
-        display: block;
-      }
-      a {
-        color:white;
-      }
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-      }
-      .item {
-        margin: 2em 0;
-        padding: 1.5em;
-        background: rgba(0,0,0,.02);
-        border: 1px solid rgba(0,0,0,.06);
-        border-radius: 5px;
-      }
-      .placeholder {
-        aspect-ratio: 16/9;
-        background: rgba(255,255,255,.02);
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin:0 0 2em 0;
-      }
-      .debug, .debug * {
-        color: rgba(255,255,255,.3)
-      }
-      .playerblock {
-        display: flex;
-        aspect-ratio: 16/9;
-        background: rgba(0,0,0,.3);
-        align-items: center;
-      }
-      .landing {
-        justify-content: center;
-      }
-      .landing button {
-        font-size: 2em;
-        background: rgba(0,0,0,.15);
-        border: none;
-        color: white;
-        padding: 1.5em 1.2em;
-        border-radius: 50%;
-      }
-      .landing button:hover {
-        cursor: pointer;
-        background: rgba(31, 17, 30, 0.8)
-      }
-      .end, .start {
-        padding: 2em;
       }
       .fadeOut {
         visibility: hidden;
@@ -84,7 +23,7 @@
         visibility: visible;
         opacity: 1;
         transition: visibility 0s 300ms, opacity 300ms ease-in-out;
-      }      
+      }
       vds-media:not(:defined) {
         visibility: hidden;
       }
@@ -94,8 +33,8 @@
     <article class="container">
 
       <livestream-wrapper
-        start="Fri Oct 07 2022 23:36:00 GMT-0500"
-        end="Fri Oct 07 2022 23:38:00 GMT-0500"
+        start="Mon Oct 10 2022 16:45:25 GMT-0500"
+        end="Mon Oct 10 2022 16:48:25 GMT-0500"
         >
 
         <div slot="landing" class="landing playerblock">
@@ -105,40 +44,54 @@
         <div slot="start" class="start playerblock">
           <section>
             <h1>Preshow Banner</h1>
-            <ul>
-              <li><span data-countdown-clock></span></li>
-              <li><span data-countdown></span></li>
-              <li><span data-localDate></span></li>
-              <li><span data-localTime></span></li>
-            </ul>
+            <div><span data-countdown-clock></span>, <span data-countdown></span></div>
+            <div><span data-localDate></span> <span data-localTime></span></div>
           </section>
         </div>
 
         <div slot="player" class="live playerblock" style="aspect-ratio:16/9;width:100%">
-          <vds-media autoplay>
-            <vds-media-sync>
-            <vds-video controls autoplay poster="https://media-files.vidstack.io/poster.png" style="aspect-ratio:16/9;width:100%">
-              <video controls autoplay src="https://media-files.vidstack.io/720p.mp4" style="aspect-ratio:16/9"></video>
-            </vds-video>
-            <!--
-            <div class="meda-controls">
-              <vds-play-button>
-                <div class="media-play">Play</div>
-                <div class="media-pause">Pause</div>
-              </vds-play-button>
-              <vds-time-slider>
-                <div class="slider-track"></div>
-                <div class="slider-track fill"></div>
-                <div class="slider-thumb-container">
-                  <div class="slider-thumb"></div>
+          <vds-media autoplay class="sixteen_by_nine" autoplay can-play can-started autoplay-error>       
+              <vds-video poster="test_media/poster.png" class="sixteen_by_nine">
+                <video autoplay src="test_media/720p.mp4" class="sixteen_by_nine"></video>
+              </vds-video>
+              <section class="media-controls">    
+                <div class="controls_row2">
+                  <div class="group_a">
+                    <vds-play-button>
+                      <i class="fa-solid fa-play media-play-icon"></i>
+                      <i class="fa-solid fa-pause media-pause-icon"></i>
+                    </vds-play-button>            
+                    <vds-mute-button>
+                      <svg class="media-mute-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M5.889 16H2a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h3.889l5.294-4.332a.5.5 0 0 1 .817.387v15.89a.5.5 0 0 1-.817.387L5.89 16zm14.525-4l3.536 3.536l-1.414 1.414L19 13.414l-3.536 3.536l-1.414-1.414L17.586 12L14.05 8.464l1.414-1.414L19 10.586l3.536-3.536l1.414 1.414L20.414 12z"
+                        />
+                      </svg>
+                      <svg class="media-unmute-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M5.889 16H2a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h3.889l5.294-4.332a.5.5 0 0 1 .817.387v15.89a.5.5 0 0 1-.817.387L5.89 16zm13.517 4.134l-1.416-1.416A8.978 8.978 0 0 0 21 12a8.982 8.982 0 0 0-3.304-6.968l1.42-1.42A10.976 10.976 0 0 1 23 12c0 3.223-1.386 6.122-3.594 8.134zm-3.543-3.543l-1.422-1.422A3.993 3.993 0 0 0 16 12c0-1.43-.75-2.685-1.88-3.392l1.439-1.439A5.991 5.991 0 0 1 18 12c0 1.842-.83 3.49-2.137 4.591z"
+                        />
+                      </svg>
+                    </vds-mute-button>
+                    <vds-volume-slider>
+                      <div class="slider-track"></div>
+                      <div class="slider-track fill"></div>
+                      <div class="slider-thumb-container">
+                        <div class="slider-thumb"></div>
+                      </div>
+                    </vds-volume-slider>
+                  </div>              
+                  <div class="group_b">
+                    <vds-fullscreen-button>
+                      <i class="fa-solid fa-expand media-enter-fs"></i>
+                      <!--<i class="fa-solid fa-minimize media-exit-fs"></i>-->
+                    </vds-fullscreen-button>
+                  </div>
                 </div>
-                <div class="media-preview-container">
-                  <vds-slider-video src="https://media-files.vidstack.io/240p.mp4"></vds-slider-video>
-                  <vds-slider-value-text type="pointer" format="time"></vds-slider-value-text>
-                </div>
-              </vds-time-slider>
-            </div>
-
+              </section>
+    
             <div class="media-buffering-container">
               <svg class="media-buffering-icon" fill="none" viewBox="0 0 120 120" aria-hidden="true">
                 <circle
@@ -159,10 +112,7 @@
                   pathLength="100"
                 ></circle>
               </svg>
-            </div>
-            -->
-
-            </vds-media-sync>
+            </div>                 
           </vds-media>
         </div>
 
@@ -184,14 +134,15 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/bundle.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-media.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-media-sync.js"></script>
-  <!--
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-mute-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-volume-slider.js"></script>  
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-play-button.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-buffering-indicator.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-slider-video.js"></script>
-  -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-fullscreen-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-time.js"></script>
 
 <script type="module">
-class LiveStreamWrapper extends HTMLElement {
+export class LiveStreamWrapper extends HTMLElement {
   #isInit = false;
   #divs;
   #intervals = {};
@@ -203,9 +154,6 @@ class LiveStreamWrapper extends HTMLElement {
   #time = {};
   #status = 'inital';
 
-  #hasInteracted = false; // TODO User clicks on the div to have at least 1 interaction for autoplay.
-
-  #hasStarted = false;
   #isWaiting  = false;
   #isOver = false;
 
@@ -382,15 +330,15 @@ class LiveStreamWrapper extends HTMLElement {
     }
 
     if (!this.#end && this.#duration) {
-      let end = new Date();
+      const end = new Date();
       this.#end = new Date(end.setSeconds(this.#start.getSeconds() + this.#duration));
     }
     if (!this.#end && !this.#duration) {
-      let maybeVideo = this.querySelector('video');
+      const maybeVideo = this.querySelector('video');
       if (maybeVideo) {
         this.#end = maybeVideo.duration;
       } else {
-        let end = new Date();
+        const end = new Date();
         this.#end = new Date(end.setSeconds(this.#start.getSeconds() + 10));
       }
     }
@@ -405,9 +353,14 @@ class LiveStreamWrapper extends HTMLElement {
 
     this.setLanding();
     const startButton = this.querySelector('[data-click]');
-    startButton.onclick = async () => {
-      this.#hasInteracted = true;
-      await this.#fadeOut(startButton);
+      if (startButton) {
+      startButton.onclick = async () => {
+        await this.#fadeOut(startButton);
+        this.#startClock();
+        this.setStart();
+        this.#setState(this.#start, this.#end);
+      }
+    } else {
       this.#startClock();
       this.setStart();
       this.#setState(this.#start, this.#end);
@@ -637,7 +590,6 @@ class LiveStreamWrapper extends HTMLElement {
       div.addEventListener('transitionend', resolve);
     });
   }
-
 }
 window.customElements.define('livestream-wrapper', LiveStreamWrapper);
 
@@ -654,12 +606,12 @@ window.customElements.define('livestream-wrapper', LiveStreamWrapper);
   const tzoffset = (new Date()).getTimezoneOffset() * 60000;
 
   if (livewrap.start) {
-    let startDate = (new Date(livewrap.start - tzoffset)).toISOString().split('.')[0];
+    const startDate = (new Date(livewrap.start - tzoffset)).toISOString().split('.')[0];
     start.value = startDate;
   }
 
   if (livewrap.end) {
-    let endDate = (new Date(livewrap.end - tzoffset)).toISOString().split('.')[0];
+    const endDate = (new Date(livewrap.end - tzoffset)).toISOString().split('.')[0];
     end.value = endDate;
   }
 
