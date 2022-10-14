@@ -5,7 +5,6 @@ body {
   padding: .5em 1em;
   color: white;
   font-family: sans-serif;
-  height:100vh;
   background-color:#999eff;
   background-image:
   radial-gradient(at 66% 53%, hsla(298,68%,21%,1) 0px, transparent 50%),
