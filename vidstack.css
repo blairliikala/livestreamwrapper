@@ -1,24 +1,32 @@
+vds-media {
+  border-radius: 10px;
+}
 .sixteen_by_nine {
   width: 100%;
   aspect-ratio: 16/9;
 }
-.media-controls * {
-  box-sizing: border-box;
-}
 .media-controls {
-  width: 100%;
-  padding: 0;
+  display: grid;
+  aspect-ratio: 16/9;
+  grid-template-rows: [header] auto [body] 1fr [footer] auto;
+  grid-template-columns: 1fr;
   position: absolute;
-  bottom: 0;
-  left: 0;
-  background: rgba(0,0,0,0);
+  top: 0;
+  width: 100%;
 }
-.controls_row1 {
+.controls_header {
+  display: flex;
+  padding: 1em;
+  color: rgba(255,255,255,1);
 }
+.controls_body {
+}
+.controls_footer {
+}
+.controls_row1 {}
 .controls_row2 {
   display: flex;
   position: relative;
-  padding-bottom: .4em;  
 }
 .group_a {
   display: flex;
@@ -32,8 +40,10 @@
   margin-left: auto;
   align-items: center;
   position: relative;
+  margin-right: 1em;
 }
-.group_b .fa-solid, group_a .fa-solid {
+.group_b .fa-solid, 
+.group_a .fa-solid {
   padding: .5em;
 }
 .media-times {
@@ -47,6 +57,14 @@
   min-width: 2em;
 }
 vds-media[paused] .media-pause-icon {
+  display: none;
+}
+/* Hide pause text when media _is_ paused. */
+vds-media[paused] .media-pause {
+  display: none;
+}
+/* Hide play text when media _is not_ paused. */
+vds-media:not([paused]) .media-play {
   display: none;
 }
 
@@ -68,15 +86,6 @@ vds-media:not([muted]) .media-unmute {
 /****/
 
 
-/* Hide pause text when media _is_ paused. */
-vds-media[paused] .media-pause {
-  display: none;
-}
-
-/* Hide play text when media _is not_ paused. */
-vds-media:not([paused]) .media-play {
-  display: none;
-}
 .media-buffering-container {
   position: absolute;
   top: 0;
