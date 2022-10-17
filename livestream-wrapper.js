@@ -2,19 +2,19 @@ export class LiveStreamWrapper extends HTMLElement {
   #isInit = false;
   #divs;
   #intervals = {};
+  #time = {};
+  #status = 'inital';
+  #isWaiting  = false;
+  #isLive = false;
+  #isOver = false;
+  #isEndOverride = false;
+  #hasSeeked = false;
+
+  // Params
   #start; // ISO 8601
   #end;
   #duration; // in seconds.
   #isLiveToVOD = false; // Bool to show video once over.
-  #isLive = false; // Override to show the player regardless of time.
-  #time = {};
-  #status = 'inital';
-
-  #isWaiting  = false;
-  #isOver = false;
-
-  #isEndOverride = false;
-  #hasSeeked = false;
 
   css = `<style>
     .hidden {
@@ -51,7 +51,6 @@ export class LiveStreamWrapper extends HTMLElement {
       'start',
       'end',
       'duration',
-      'is-live',
       'live-to-vod'
     ];
   }
@@ -69,27 +68,20 @@ export class LiveStreamWrapper extends HTMLElement {
   set duration(item) {
     this.setAttribute('duration', item);
   }
-  set isLive(item) {
-    this.setAttribute('is-live', item); // Works with being a bool?
-  }
   set liveToVod(item) {
     this.setAttribute('live-to-vod', item); // Works with being a bool?
   }
-
   get time() {
     return this.#time;
-  }
-  get relativeStart() {
-    return this.#time.relativeStart;
-  }
-  get countdownClock() {
-    return this.#time.countdownClock;
   }
   get start() {
     return this.#start;
   }
   get end() {
     return this.#end
+  }
+  get status() {
+    return this.#status;
   }
 
   connectedCallback() {
@@ -138,7 +130,7 @@ export class LiveStreamWrapper extends HTMLElement {
     this.#start    = this.getAttribute('start') || ''; // Required.
     this.#end      = this.getAttribute('end') || '';
     this.#duration = this.getAttribute('duration') || '';
-    this.#isLiveToVOD = this.getAttribute('live-to-vod');
+    const isLiveToVOD = this.getAttribute('live-to-vod');
 
     if (!this.#start) {
       console.error('A start date is required.');
@@ -152,12 +144,12 @@ export class LiveStreamWrapper extends HTMLElement {
     if (this.#end) this.#end = new Date(this.#end);
 
     // Check if dates are valid.
-    if (!this.#isValidDate(this.#start)) {
+    if (!LiveStreamWrapper.isValidDate(this.#start)) {
       console.error('Not able to determine the start date.')
       this.#event('error', 'Not able to determine the start date.', {});
       return;
     }
-    if (this.#end && !this.#isValidDate(this.#end)) {
+    if (this.#end && !LiveStreamWrapper.isValidDate(this.#end)) {
       this.#event('error', 'Invalid End Date formatting.', {});
     }
 
@@ -173,7 +165,7 @@ export class LiveStreamWrapper extends HTMLElement {
     // Duration is a number.
     if (this.#duration) {
       this.#duration = Number(this.#duration);
-      if (isNaN(this.#duration)) {
+      if (Number.isNaN(this.#duration)) {
         console.warn( `Duration is not a number we can use: "${this.getAttribute('duration')}"`)
         this.#event('error', `Duration is not a number we can use: "${this.getAttribute('duration')}"`, {})
         this.#duration = undefined;
@@ -181,8 +173,8 @@ export class LiveStreamWrapper extends HTMLElement {
     }
 
     // attribute boolean fix. live-to-vod="false" will be false.
-    if (this.#isLiveToVOD) {
-      this.#isLiveToVOD = this.#isLiveToVOD === 'false' ? false : true;
+    if (isLiveToVOD !== undefined) {
+      this.#isLiveToVOD = isLiveToVOD !== 'false';
     }
 
     if (!this.#end && this.#duration) {
@@ -203,22 +195,21 @@ export class LiveStreamWrapper extends HTMLElement {
     }
 
     if (this.#getState(this.#start, this.#end) === 'end') {
+      this.#setState(this.#start, this.#end);
       this.setEnd();
       return;
     }
 
     this.setLanding();
     const startButton = this.querySelector('[data-click]');
-      if (startButton) {
+    if (startButton) {
       startButton.onclick = async () => {
-        await this.#fadeOut(startButton);
+        await LiveStreamWrapper.fadeOut(startButton);
         this.#startClock();
-        this.setStart();
         this.#setState(this.#start, this.#end);
       }
     } else {
       this.#startClock();
-      this.setStart();
       this.#setState(this.#start, this.#end);
     }
   }
@@ -226,22 +217,22 @@ export class LiveStreamWrapper extends HTMLElement {
   #getState(start, end) {
     const now = new Date();
     switch(true) {
-      case now < start:
-        return 'pre';
-
       case now > end || this.#isEndOverride:
         return 'end';
-
       case now > start:
         return 'live';
+      case now < start:
+        return 'pre';
+      default:
+        return '';
     }
   }
 
   #setState(start, end) {
     this.#status = this.#getState(start, end);
-    if (this.#status === 'pre') this.setStart();
     if (this.#status === 'end') this.setEnd();
     if (this.#status === 'live') this.setLive();
+    if (this.#status === 'pre') this.setStart();
   }
 
   setLanding() {
@@ -250,6 +241,7 @@ export class LiveStreamWrapper extends HTMLElement {
     this.#hidePlayer();
     this.#hidePostgame();
   }
+
   setStart() {
     this.#hideLanding();
     this.#showPregame();
@@ -266,6 +258,7 @@ export class LiveStreamWrapper extends HTMLElement {
       this.#isWaiting = true;
     }
   }
+
   setLive() {
     this.#hideLanding();
     this.#hidePregame();
@@ -287,13 +280,14 @@ export class LiveStreamWrapper extends HTMLElement {
         }
         player.onended = () => {
           this.#isEndOverride = true;
-          this.#setState(start, end);
+          this.#setState(this.#start, this.#end);
         }
       }
       this.#isLive = true;
     }
 
   }
+
   setEnd() {
     this.#hideLanding();
     this.#hidePregame();
@@ -308,12 +302,13 @@ export class LiveStreamWrapper extends HTMLElement {
     const player = this.querySelector('video');
     if (player) player.pause();
 
-    this.#stopClock();
+    //this.#stopClock();
     if (!this.#isOver) {
       this.#event('end', 'Event has ended', {});
       this.#isOver = true;
     }
   }
+
   #showLanding() {
     this.#divs.landing.classList.remove('hidden');
   }
@@ -343,15 +338,17 @@ export class LiveStreamWrapper extends HTMLElement {
     this.#clock();
     this.#intervals.clock = setInterval(() => this.#clock(), 500);
   }
+
   #stopClock() {
     clearInterval(this.#intervals.clock);
   }
+
   #clock() {
     if (this.#start) {
-      this.#time.relativeStart  = this.#getRelativeTimeDistance(this.#start);
-      this.#time.countdownClock = this.#getCountdownClock(this.#start);
-      this.#time.startlocaltime = this.#startLocalTime(this.#start);
-      this.#time.startlocaldate = this.#startLocalDate(this.#start);
+      this.#time.relativeStart  = LiveStreamWrapper.getRelativeTimeDistance(this.#start);
+      this.#time.countdownClock = LiveStreamWrapper.getCountdownClock(this.#start);
+      this.#time.startlocaltime = LiveStreamWrapper.startLocalTime(this.#start);
+      this.#time.startlocaldate = LiveStreamWrapper.startLocalDate(this.#start);
       if (this.#divs.countdown) {
         this.#divs.countdown.innerHTML = this.#time.relativeStart;
       }
@@ -369,12 +366,16 @@ export class LiveStreamWrapper extends HTMLElement {
       this.#setState(this.#start, this.#end);
 
     } else {
-      console.debug('No start time set.');
+      console.warn('No start time set.');
     }
   }
 
-// Pure Functions
-  #getRelativeTimeDistance(d1, d2 = new Date() ) {
+  #event(name, details, object) {
+    this.dispatchEvent(new CustomEvent('all', {detail: {"name": name, "message": details, "full": object}}));
+    this.dispatchEvent(new CustomEvent(name, {detail: {"message": details, "full": object}}));
+  }
+
+  static getRelativeTimeDistance(d1, d2 = new Date() ) {
     const units = {
       year  : 24 * 60 * 60 * 1000 * 365,
       month : 24 * 60 * 60 * 1000 * 365/12,
@@ -385,52 +386,46 @@ export class LiveStreamWrapper extends HTMLElement {
     }
     const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
     const elapsed = d1 - d2;
-    for (var u in units)
+    for (const u in units)
       if (Math.abs(elapsed) > units[u] || u == 'second')
         return rtf.format(Math.round(elapsed/units[u]),u)
   }
-  #startLocalTime(time) {
+
+  static startLocalTime(time) {
     return time.toLocaleTimeString('en-us',{timeZoneName:'short', hour: 'numeric', minute: '2-digit'});
   }
-  #startLocalDate(time) {
+
+  static startLocalDate(time) {
     return time.toLocaleDateString('en-us',{month: 'long', day: 'numeric', year: 'numeric'});
   }
-  #getCountdownClock(countDownDate) {
 
-    let now = new Date().getTime();
-
+  static getCountdownClock(countDownDate) {
+    const now = new Date().getTime();
     const distance = countDownDate - now;
-    let hours  = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const hours  = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     let sec    = Math.floor((distance % (1000 * 60)) / 1000);
 
-    if (sec < 10) sec = "0"+sec;
-    if (mins < 10) mins = "0"+mins;
+    if (sec < 10) sec = `0${sec}`;
+    if (mins < 10) mins = `0${mins}`;
 
     if (distance > 0) {
       return `${hours || '00'}:${mins || '00'}:${sec || '00'}`;
-    } else {
-      return `00:00:00`;
     }
-  }
-  #event(name, details, object) {
-    this.dispatchEvent(new CustomEvent('all', {detail: {"name": name, "message": details, "full": object}}));
-    this.dispatchEvent(new CustomEvent(name, {detail: {"message": details, "full": object}}));
+    return `00:00:00`;
   }
 
-  #isValidDate(d) {
+  static isValidDate(d) {
     if (Object.prototype.toString.call(d) === "[object Date]") {
-      if (isNaN(d)) {
+      if (Number.isNaN(d)) {
         return false;
-      } else {
-        return true;
       }
-    } else {
-      return false;
+      return true;
     }
+    return false;
   }
 
-  async #fadeOut(div) {
+  static async fadeOut(div) {
     div.classList.add('fadeOut');
     div.classList.remove('fadeIn');
     return new Promise(resolve => {
@@ -440,6 +435,7 @@ export class LiveStreamWrapper extends HTMLElement {
       });
     });
   }
+
   async #fadeIn(div) {
     div.classList.add('fadeIn');
     return new Promise(resolve => {
