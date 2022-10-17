@@ -10,9 +10,6 @@ export class LiveStreamWrapper extends HTMLElement {
   #time = {};
   #status = 'inital';
 
-  #hasInteracted = false; // TODO User clicks on the div to have at least 1 interaction for autoplay.
-
-  #hasStarted = false;
   #isWaiting  = false;
   #isOver = false;
 
@@ -189,15 +186,15 @@ export class LiveStreamWrapper extends HTMLElement {
     }
 
     if (!this.#end && this.#duration) {
-      let end = new Date();
+      const end = new Date();
       this.#end = new Date(end.setSeconds(this.#start.getSeconds() + this.#duration));
     }
     if (!this.#end && !this.#duration) {
-      let maybeVideo = this.querySelector('video');
+      const maybeVideo = this.querySelector('video');
       if (maybeVideo) {
         this.#end = maybeVideo.duration;
       } else {
-        let end = new Date();
+        const end = new Date();
         this.#end = new Date(end.setSeconds(this.#start.getSeconds() + 10));
       }
     }
@@ -212,9 +209,14 @@ export class LiveStreamWrapper extends HTMLElement {
 
     this.setLanding();
     const startButton = this.querySelector('[data-click]');
-    startButton.onclick = async () => {
-      this.#hasInteracted = true;
-      await this.#fadeOut(startButton);
+      if (startButton) {
+      startButton.onclick = async () => {
+        await this.#fadeOut(startButton);
+        this.#startClock();
+        this.setStart();
+        this.#setState(this.#start, this.#end);
+      }
+    } else {
       this.#startClock();
       this.setStart();
       this.#setState(this.#start, this.#end);
@@ -444,6 +446,5 @@ export class LiveStreamWrapper extends HTMLElement {
       div.addEventListener('transitionend', resolve);
     });
   }
-
 }
 window.customElements.define('livestream-wrapper', LiveStreamWrapper);

@@ -6,6 +6,7 @@ body {
   color: white;
   font-family: sans-serif;
   background-color:#999eff;
+  min-height: 100vh;
   background-image:
   radial-gradient(at 66% 53%, hsla(298,68%,21%,1) 0px, transparent 50%),
   radial-gradient(at 28% 94%, hsla(198,68%,21%,1) 0px, transparent 50%),

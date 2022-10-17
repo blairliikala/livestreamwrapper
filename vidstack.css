@@ -1,4 +1,8 @@
-vds-media {
+vds-video {
+  aspect-ratio: 16/9;
+  background: none;
+}
+video {
   border-radius: 10px;
 }
 .sixteen_by_nine {
@@ -19,10 +23,9 @@ vds-media {
   padding: 1em;
   color: rgba(255,255,255,1);
 }
-.controls_body {
-}
-.controls_footer {
-}
+.controls_body {}
+.controls_footer {}
+
 .controls_row1 {}
 .controls_row2 {
   display: flex;
@@ -45,6 +48,10 @@ vds-media {
 .group_b .fa-solid, 
 .group_a .fa-solid {
   padding: .5em;
+}
+.big_play {
+  display: block;
+  height: 100%;
 }
 .media-times {
   display: flex;
