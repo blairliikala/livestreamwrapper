@@ -33,6 +33,7 @@
     <article class="container">
 
 
+      <!--
       <vds-media autoplay class="sixteen_by_nine" autoplay can-play can-started autoplay-error>
         <vds-video poster="test_media/poster.png" class="sixteen_by_nine">
           <video autoplay src="test_media/720p.mp4" class="sixteen_by_nine"></video>
@@ -105,10 +106,11 @@
           </svg>
         </div>
       </vds-media>
-
+      -->
+      
       <livestream-wrapper
-        start="Sun Oct 16 2022 15:45:00 GMT-0500"
-        end="Sun Oct 16 2022 15:46:00 GMT-0500"
+        start="Mon Oct 17 2022 15:05:02 GMT-0500"
+        end="Mon Oct 17 2022 15:07:02 GMT-0500"
         >
 
         <div slot="landing" class="landing playerblock">
@@ -223,13 +225,19 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-fullscreen-button.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-time.js"></script>
 
-
 <script type="module">
 export class LiveStreamWrapper extends HTMLElement {
   #isInit = false;
   #divs;
-  #intervals = {};
-  #time = {};
+  #intervals = {
+    clock: undefined
+  };
+  #time = {
+    relativeStart: undefined,
+    countdownClock: undefined,
+    startlocaltime: undefined,
+    startlocaldate: undefined,
+  };
   #status = 'inital';
   #isWaiting  = false;
   #isLive = false;
@@ -400,8 +408,8 @@ export class LiveStreamWrapper extends HTMLElement {
     }
 
     // attribute boolean fix. live-to-vod="false" will be false.
-    if (isLiveToVOD !== undefined) {
-      this.#isLiveToVOD = isLiveToVOD !== 'false';
+    if (isLiveToVOD !== null) {
+      this.#isLiveToVOD = isLiveToVOD === 'true' ? true : false;
     }
 
     if (!this.#end && this.#duration) {
@@ -423,18 +431,18 @@ export class LiveStreamWrapper extends HTMLElement {
 
     if (this.#getState(this.#start, this.#end) === 'end') {
       this.#setState(this.#start, this.#end);
-      this.setEnd();
+      this.#startClock();
       return;
     }
 
     this.setLanding();
     const startButton = this.querySelector('[data-click]');
     if (startButton) {
-      startButton.onclick = async () => {
+      startButton.addEventListener('click', async () => {
         await LiveStreamWrapper.fadeOut(startButton);
         this.#startClock();
         this.#setState(this.#start, this.#end);
-      }
+      });
     } else {
       this.#startClock();
       this.#setState(this.#start, this.#end);
@@ -630,11 +638,11 @@ export class LiveStreamWrapper extends HTMLElement {
     const now = new Date().getTime();
     const distance = countDownDate - now;
     const hours  = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    let sec    = Math.floor((distance % (1000 * 60)) / 1000);
+    let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString();
+    let sec    = Math.floor((distance % (1000 * 60)) / 1000).toString();
 
-    if (sec < 10) sec = `0${sec}`;
-    if (mins < 10) mins = `0${mins}`;
+    if (Number(sec) < 10) sec = `0${sec}`;
+    if (Number(mins) < 10) mins = `0${mins}`;
 
     if (distance > 0) {
       return `${hours || '00'}:${mins || '00'}:${sec || '00'}`;
@@ -692,7 +700,6 @@ window.customElements.define('livestream-wrapper', LiveStreamWrapper);
     const endDate = (new Date(livewrap.end - tzoffset)).toISOString().split('.')[0];
     end.value = endDate;
   }
-
 
   document.querySelector('#setTime').addEventListener('click', () => {
     livewrap.start = start.value;

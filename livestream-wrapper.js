@@ -1,8 +1,15 @@
 export class LiveStreamWrapper extends HTMLElement {
   #isInit = false;
   #divs;
-  #intervals = {};
-  #time = {};
+  #intervals = {
+    clock: undefined
+  };
+  #time = {
+    relativeStart: undefined,
+    countdownClock: undefined,
+    startlocaltime: undefined,
+    startlocaldate: undefined,
+  };
   #status = 'inital';
   #isWaiting  = false;
   #isLive = false;
@@ -173,8 +180,8 @@ export class LiveStreamWrapper extends HTMLElement {
     }
 
     // attribute boolean fix. live-to-vod="false" will be false.
-    if (isLiveToVOD !== undefined) {
-      this.#isLiveToVOD = isLiveToVOD !== 'false';
+    if (isLiveToVOD !== null) {
+      this.#isLiveToVOD = isLiveToVOD === 'true' ? true : false;
     }
 
     if (!this.#end && this.#duration) {
@@ -196,18 +203,18 @@ export class LiveStreamWrapper extends HTMLElement {
 
     if (this.#getState(this.#start, this.#end) === 'end') {
       this.#setState(this.#start, this.#end);
-      this.setEnd();
+      this.#startClock();
       return;
     }
 
     this.setLanding();
     const startButton = this.querySelector('[data-click]');
     if (startButton) {
-      startButton.onclick = async () => {
+      startButton.addEventListener('click', async () => {
         await LiveStreamWrapper.fadeOut(startButton);
         this.#startClock();
         this.#setState(this.#start, this.#end);
-      }
+      });
     } else {
       this.#startClock();
       this.#setState(this.#start, this.#end);
@@ -403,11 +410,11 @@ export class LiveStreamWrapper extends HTMLElement {
     const now = new Date().getTime();
     const distance = countDownDate - now;
     const hours  = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    let sec    = Math.floor((distance % (1000 * 60)) / 1000);
+    let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString();
+    let sec    = Math.floor((distance % (1000 * 60)) / 1000).toString();
 
-    if (sec < 10) sec = `0${sec}`;
-    if (mins < 10) mins = `0${mins}`;
+    if (Number(sec) < 10) sec = `0${sec}`;
+    if (Number(mins) < 10) mins = `0${mins}`;
 
     if (distance > 0) {
       return `${hours || '00'}:${mins || '00'}:${sec || '00'}`;
