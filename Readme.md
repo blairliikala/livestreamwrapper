@@ -70,6 +70,17 @@ There are a few ways to end an event:
 | duration | Length that the player slot should be shown in seconds. Used instead of the `end` parameters. |
 | live-to-vod | Boolean that will continue to show the player when the event is finished. |
 
+## Properties
+
+| Name | Description |
+| - | - |
+| hasInteracted | Boolean. Set false until the `data-click` div is clicked. |
+| time | An object of current countdowns in a few different formats. |
+
+### Interactions
+
+Browsers require a click or interaction in order to allow autoplaying with audio. The component has an initial `data-click` button that can be added to the player so that when the player starts there will be audio. This interaction is set by the `hasInteracted` property, and alternatively can be changed with an API call if an interaction happened somewhere else on the page.
+
 ## Slots
 
 ### Landing

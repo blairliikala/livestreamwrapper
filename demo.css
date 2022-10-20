@@ -21,7 +21,7 @@ a {
 }
 .container {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 10em auto;
 }
 
 /*** Styles inside the Component ***/
