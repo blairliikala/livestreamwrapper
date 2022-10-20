@@ -15,7 +15,7 @@ export class LiveStreamWrapper extends HTMLElement {
   #isLive = false;
   #isOver = false;
   #isEndOverride = false;
-  #hasSeeked = false;
+  #hasInteracted = false;
 
   // Params
   #start; // ISO 8601
@@ -78,6 +78,10 @@ export class LiveStreamWrapper extends HTMLElement {
   set liveToVod(item) {
     this.setAttribute('live-to-vod', item); // Works with being a bool?
   }
+  set hasInteracted(item) {
+    this.#hasInteracted = item;
+    this.#init();
+  }
   get time() {
     return this.#time;
   }
@@ -89,6 +93,9 @@ export class LiveStreamWrapper extends HTMLElement {
   }
   get status() {
     return this.#status;
+  }
+  get hasInteracted() {
+    return this.#hasInteracted;
   }
 
   connectedCallback() {
@@ -207,6 +214,12 @@ export class LiveStreamWrapper extends HTMLElement {
       return;
     }
 
+    if (this.#hasInteracted) {
+      this.#setState(this.#start, this.#end);
+      this.#startClock();
+      return;      
+    }
+
     this.setLanding();
     const startButton = this.querySelector('[data-click]');
     if (startButton) {
@@ -214,6 +227,7 @@ export class LiveStreamWrapper extends HTMLElement {
         await LiveStreamWrapper.fadeOut(startButton);
         this.#startClock();
         this.#setState(this.#start, this.#end);
+        this.#hasInteracted = true;
       });
     } else {
       this.#startClock();
@@ -278,12 +292,9 @@ export class LiveStreamWrapper extends HTMLElement {
       if (player) {
         if (player.paused) player.play();
         player.onplay = () => {
-          //if (!this.#hasSeeked) {
             this.#event('seeking', 'seeing to wallclock time', {});
             const offset = (new Date() - this.#start) / 1000;
             player.currentTime = offset;
-            //this.#hasSeeked = true;
-          //}
         }
         player.onended = () => {
           this.#isEndOverride = true;
@@ -343,7 +354,7 @@ export class LiveStreamWrapper extends HTMLElement {
 
   #startClock() {
     this.#clock();
-    this.#intervals.clock = setInterval(() => this.#clock(), 500);
+    this.#intervals.clock = setInterval(() => this.#clock(), 100);
   }
 
   #stopClock() {
@@ -440,13 +451,6 @@ export class LiveStreamWrapper extends HTMLElement {
         div.remove();
         resolve();
       });
-    });
-  }
-
-  async #fadeIn(div) {
-    div.classList.add('fadeIn');
-    return new Promise(resolve => {
-      div.addEventListener('transitionend', resolve);
     });
   }
 }
