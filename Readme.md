@@ -80,8 +80,8 @@ livestream-wrapper:not(:defined) {
 
 There are a few ways to end an event:
 
-- End Date
-- Duration
+- End Date parameter
+- Duration parameter
 - Not specifying an end or duration will then end when the player emits an `end` event.
 - Live to VOD is when the on-demand recording should remain available after the end of the event.
 
@@ -94,6 +94,15 @@ There are a few ways to end an event:
 | duration | Length that the player slot should be shown in seconds. Used instead of the `end` parameters. |
 | live-to-vod | Boolean that will continue to show the player when the event is finished. |
 
+```html
+<livestream-wrapper
+  start="Thu Oct 20 2022 13:56:35 GMT-0500"
+  end="Thu Oct 20 2022 14:56:35 GMT-0500"
+  duration="600"
+  live-to-vod="true"
+>
+```
+
 ## Properties
 
 | Name | Description |
@@ -101,7 +110,13 @@ There are a few ways to end an event:
 | hasInteracted | Boolean. Set false until the `data-click` div is clicked. |
 | time | An object of current countdowns in a few different formats. |
 
-### Interactions
+```javascript
+const elm = document.querySelector('livestream-wrapper');
+elm.hasInteracted = true;
+console.log(elm.time) // Object of times before start.
+```
+
+### About Autoplay and Interactions
 
 Browsers require a click or interaction in order to allow autoplaying with audio. The component has an initial `data-click` button that can be added to the player so that when the player starts there will be audio. This interaction is set by the `hasInteracted` property, and alternatively can be changed with an API call if an interaction happened somewhere else on the page.
 
@@ -117,26 +132,23 @@ There are 4 slots: Landing, Start, Player, and End that are cycled through durin
 
 `hasInteracted` can be changed via javascript to skip this step (see above), or the slot can be omitted.  If the slot is omitted, the video should be started as muted to allow autoplay to work, otherwise the user will need to click play when the stream begins.
 
-## Start
+### Start
 
 | Name | Description |
 | - | - |
 | data-countdown-clock | A view in HH:MM:SS countdown till the start time |
-| data-countdown | A general description of time remaining, such as "in 3 hours" |
-| data-localDate | A localized start date.  The date in the viewer's timezone. |
-| data-localTime | A localized start time.  The time in the viewer's timezone. |
+| data-countdown | Description of time remaining, such as "in 3 hours" |
+| data-localDate | Localized start date in the viewer's timezone. |
+| data-localTime | Localized start time in the viewer's timezone. |
 
-## Player
+### Player
 
 (No additional helpers)
 
-## End
+### End
 
 (No additional helpers)
 
 ## Changelog
 
 Currently in Pre-release.
-
-## Examples
-
