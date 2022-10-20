@@ -1,16 +1,41 @@
 # Livestream Wrapper
 
-A native component to help with the start, playback and ending of live streams, or simulated live streams.
+A native component to help manage the start, playback and ending of live streams, or simulated live streams.
 
-Included are helpers such as countdowns, javascript events, and listeners for video ending. Slots allow customization of each screen, and shown or hidden depending on the state.
+Slots allow customization of each screen, and shown or hidden depending on the state.  Also included are helpers for countdowns, and events for additional scripting.
 
-## Usage
+Demo:
+[https://livestreamwrapper.vercel.app/](https://livestreamwrapper.vercel.app/)
+
+## Basic Layout
+
+```html
+<livestream-wrapper start="" end="">
+
+  <div slot="landing">
+  </div>
+
+  <div slot="start">
+  </div>
+
+  <div slot="player">
+  </div>
+
+  <div slot="end">
+  </div>
+
+</livesteram-wrapper>
+```
+
+## Typical Usage
 
 ```html
 <style>
+/* Hide the component until loaded */
 livestream-wrapper:not(:defined) {
   visibility: hidden;
 }
+/* Helps with state transitions */
 .fadeOut {
   visibility: hidden;
   opacity: 0;
@@ -19,9 +44,8 @@ livestream-wrapper:not(:defined) {
 </style>
 
 <livestream-wrapper
-  start=""
-  end=""
-  duration=""
+  start="Thu Oct 20 2022 13:56:35 GMT-0500"
+  end="Thu Oct 20 2022 14:56:35 GMT-0500"
   >
 
   <div slot="landing">
@@ -42,7 +66,7 @@ livestream-wrapper:not(:defined) {
   </div>
 
   <div slot="player">
-    <video></video>
+    Add your player here <video></video>
   </div>
 
   <div slot="end">
@@ -83,11 +107,15 @@ Browsers require a click or interaction in order to allow autoplaying with audio
 
 ## Slots
 
+There are 4 slots: Landing, Start, Player, and End that are cycled through during an event. HTML can be placed inside these slots and styled.
+
 ### Landing
 
 | Name | Description |
 | - | - |
 | data-click | An element that a user clicks to show the countdown or stream.  This interaction is required for browsers to allow autoplay to work (with audio). |
+
+`hasInteracted` can be changed via javascript to skip this step (see above), or the slot can be omitted.  If the slot is omitted, the video should be started as muted to allow autoplay to work, otherwise the user will need to click play when the stream begins.
 
 ## Start
 
@@ -100,4 +128,15 @@ Browsers require a click or interaction in order to allow autoplaying with audio
 
 ## Player
 
+(No additional helpers)
+
 ## End
+
+(No additional helpers)
+
+## Changelog
+
+Currently in Pre-release.
+
+## Examples
+
