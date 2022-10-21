@@ -1,21 +1,51 @@
 {
-  "name": "livestreamwrapper",
-  "version": "1.0.0",
+  "name": "livestream-wrapper",
   "description": "A native component to help with the start, playback and ending of live streams, or simulated live streams.",
-  "main": "livestreamthing.js",
-  "module": "livestreamthing.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "license": "MIT",
+  "author": "Blair Liikala (https://blairliikala.com)",
+  "version": "0.0.4",
+  "main": "livestream-wrapper.js",
+  "module": "livestream-wrapper.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/blairliikala/livestreamwrapper.git"
+    "url": "https://github.com/blairliikala/livestreamwrapper"
+  },  
+  "scripts": {
+    "analyze": "cem analyze --litelement",
+    "start": "web-dev-server",
+    "lint": "eslint --ext .js,.html . --ignore-path .gitignore && prettier \"**/*.js\" --check --ignore-path .gitignore",
+    "format": "eslint --ext .js,.html . --fix --ignore-path .gitignore && prettier \"**/*.js\" --write --ignore-path .gitignore"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/blairliikala/livestreamwrapper/issues"
+  "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.6.4",
+    "@open-wc/eslint-config": "^8.0.2",
+    "@web/dev-server": "^0.1.35",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^8.3.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1"
   },
-  "homepage": "https://github.com/blairliikala/livestreamwrapper#readme"
+  "customElements": "custom-elements.json",
+  "eslintConfig": {
+    "extends": [
+      "@open-wc",
+      "prettier"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "arrowParens": "avoid"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  }
 }

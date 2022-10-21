@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Live Wrapper</title>
+    <link href="vidstack.css" rel="stylesheet" type="text/css">
+    <link href="demo.css" rel="stylesheet" type="text/css">
+    <script src="https://kit.fontawesome.com/41aa90cc96.js" crossorigin="anonymous"></script>
+
+    <style>
+      livestream-wrapper:not(:defined) {
+        visibility: hidden;
+      }
+      .fadeOut {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s 300ms, opacity 300ms ease-in-out;
+      }
+      .fadeIn {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s 300ms, opacity 300ms ease-in-out;
+      }
+      vds-media:not(:defined) {
+        visibility: hidden;
+      }
+  </style>
+  </head>
+  <body>
+    <article class="container">
+      
+      <livestream-wrapper
+        start="Mon Nov 20 2022 15:05:02 GMT-0500"
+        end="Mon Nov 20 2022 15:07:02 GMT-0500"
+        >
+
+        <div slot="landing" class="landing playerblock">
+          <button data-click>Play</button>
+        </div>
+
+        <div slot="start" class="start playerblock">
+          <section>
+            <h1>Preshow Banner</h1>
+            <div><span data-countdown-clock></span>, <span data-countdown></span></div>
+            <div><span data-localDate></span> <span data-localTime></span></div>
+          </section>
+        </div>
+
+        <div slot="player" class="live playerblock sixteen_by_nine">
+          <vds-media autoplay class="sixteen_by_nine" autoplay can-play can-started autoplay-error>
+              <vds-video poster="test_media/poster.png" class="sixteen_by_nine">
+                <video autoplay src="test_media/720p.mp4" class="sixteen_by_nine"></video>
+              </vds-video>
+              <article class="media-controls">
+                <header class="controls_header">
+                  Live
+                </header>
+                <section class="controls_body">
+                  <vds-play-button class="big_play"></vds-play-button>
+                </section>
+                <section class="controls_footer">
+                  <div class="controls_row2">
+                    <div class="group_a">
+                      <vds-play-button>
+                        <i class="fa-solid fa-play media-play-icon"></i>
+                        <i class="fa-solid fa-pause media-pause-icon"></i>
+                      </vds-play-button>
+                      <vds-mute-button>
+                        <svg class="media-mute-icon" aria-hidden="true" viewBox="0 0 24 24">
+                          <path
+                            fill="currentColor"
+                            d="M5.889 16H2a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h3.889l5.294-4.332a.5.5 0 0 1 .817.387v15.89a.5.5 0 0 1-.817.387L5.89 16zm14.525-4l3.536 3.536l-1.414 1.414L19 13.414l-3.536 3.536l-1.414-1.414L17.586 12L14.05 8.464l1.414-1.414L19 10.586l3.536-3.536l1.414 1.414L20.414 12z"
+                          />
+                        </svg>
+                        <svg class="media-unmute-icon" aria-hidden="true" viewBox="0 0 24 24">
+                          <path
+                            fill="currentColor"
+                            d="M5.889 16H2a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1h3.889l5.294-4.332a.5.5 0 0 1 .817.387v15.89a.5.5 0 0 1-.817.387L5.89 16zm13.517 4.134l-1.416-1.416A8.978 8.978 0 0 0 21 12a8.982 8.982 0 0 0-3.304-6.968l1.42-1.42A10.976 10.976 0 0 1 23 12c0 3.223-1.386 6.122-3.594 8.134zm-3.543-3.543l-1.422-1.422A3.993 3.993 0 0 0 16 12c0-1.43-.75-2.685-1.88-3.392l1.439-1.439A5.991 5.991 0 0 1 18 12c0 1.842-.83 3.49-2.137 4.591z"
+                          />
+                        </svg>
+                      </vds-mute-button>
+                      <vds-volume-slider>
+                        <div class="slider-track"></div>
+                        <div class="slider-track fill"></div>
+                        <div class="slider-thumb-container">
+                          <div class="slider-thumb"></div>
+                        </div>
+                      </vds-volume-slider>
+                      <div class="live_icon">Live</div>
+                    </div>
+                    <div class="group_b">
+                      <vds-fullscreen-button>
+                        <i class="fa-solid fa-expand media-enter-fs"></i>
+                      </vds-fullscreen-button>
+                    </div>
+                  </div>
+                </section>
+              </article>
+
+            <div class="media-buffering-container">
+              <svg class="media-buffering-icon" fill="none" viewBox="0 0 120 120" aria-hidden="true">
+                <circle
+                  class="media-buffering-track"
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  stroke="currentColor"
+                  stroke-width="8"
+                ></circle>
+                <circle
+                  class="media-buffering-track-fill"
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  stroke="currentColor"
+                  stroke-width="10"
+                  pathLength="100"
+                ></circle>
+              </svg>
+            </div>
+          </vds-media>
+        </div>
+
+        <div slot="end" class="end playerblock">
+          <h1>The Event is Over, Thanks for Watching</h1>
+        </div>
+
+      </livestream-wrapper>
+
+      <hr />
+
+      <h4>Testing</h4>
+      <label>Start <input type="datetime-local" id="start"></label>
+      <label>End <input type="datetime-local" id="end"></label>
+      <button id="setTime">Set</button>
+
+      <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">30sec Test</button>
+
+    </article>
+  </body>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/bundle.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-media.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-mute-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-volume-slider.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-play-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-slider-video.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-fullscreen-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-time.js"></script>
+
+<script type="module">
+  import "../livestream-wrapper.js";
+</script>
+
+<!-- For Testing -->
+<script type="module">
+
+  function convertToDateInput(date) {
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000; 
+    return (new Date(date - tzoffset)).toISOString().split('.')[0];
+  }
+
+  const start = document.querySelector('#start');
+  const end = document.querySelector('#end');
+  const livewrap = document.querySelector('livestream-wrapper');
+
+  const storedStart = localStorage.getItem('start');
+  const storedEnd = localStorage.getItem('end');
+
+  if (storedStart) {
+    console.debug('Setting Start from localstorage.')
+    livewrap.start = storedStart;
+  }
+  if (storedEnd) {
+    console.debug('Setting End from localstorage.')
+    livewrap.end = storedEnd;
+  }
+
+  if (livewrap.start) {
+    const startDate = convertToDateInput(livewrap.start);
+    start.value = startDate;
+  }
+
+  if (livewrap.end) {
+    const endDate = convertToDateInput(livewrap.end)
+    end.value = endDate;
+  }
+
+  document.querySelector('#setTime').addEventListener('click', () => {
+    livewrap.start = start.value;
+    livewrap.end = end.value;
+    localStorage.setItem('start', start.value);
+    localStorage.setItem('end', end.value);
+  });
+
+  start.addEventListener('change', event => {
+    if (!event.target.value) return;
+    const date = new Date(event.target.value);
+    const endDate = date.setTime(date.getTime() + 60 * 1000);
+    end.value = convertToDateInput(endDate);
+  });
+  livewrap.addEventListener('all', event => {
+    console.log('Event: ', event.detail);
+  });
+
+  const simpleTest = document.querySelector('#simpleTest');
+  simpleTest.addEventListener('click', () => {
+    const now = new Date();
+    const newStart = now.setTime(now.getTime() + 30 * 1000); // +30sec.
+
+    const newStartDate = new Date(newStart);
+    const newEnd = newStartDate.setTime(newStartDate.getTime() + 30 * 1000); // Ends 30sec after.
+    console.log(new Date(newStart), new Date(newEnd));
+
+    start.value = convertToDateInput(new Date(newStart));
+    end.value = convertToDateInput(new Date(newEnd));
+
+    livewrap.start = new Date(newStart)
+    livewrap.end = new Date(newEnd)
+
+  })
+
+</script>
+
+</html>

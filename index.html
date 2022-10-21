@@ -151,6 +151,7 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-fullscreen-button.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-time.js"></script>
 
+  <!--
 <script type="module">
 export class LiveStreamWrapper extends HTMLElement {
   #isInit = false;
@@ -621,19 +622,42 @@ export class LiveStreamWrapper extends HTMLElement {
 }
 window.customElements.define('livestream-wrapper', LiveStreamWrapper);
 </script>
+-->
 
-
+<!--
+<script type="module">
+  import { LiveStreamWrapper } from "https://unpkg.com/livestream-wrapper@0.0.2";
+  window.customElements.define('livestream-wrapper', LiveStreamWrapper);
+</script>
+-->
+<script type="module" src="https://unpkg.com/livestream-wrapper"></script>
 
 <!-- For Testing -->
 <script type="module">
+
+  function convertToDateInput(date) {
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000; 
+    return (new Date(date - tzoffset)).toISOString().split('.')[0];
+  }
+
   const start = document.querySelector('#start');
   const end = document.querySelector('#end');
   const livewrap = document.querySelector('livestream-wrapper');
 
-  const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+  const storedStart = localStorage.getItem('start');
+  const storedEnd = localStorage.getItem('end');
+
+  if (storedStart) {
+    console.debug('Setting Start from localstorage.')
+    livewrap.start = storedStart;
+  }
+  if (storedEnd) {
+    console.debug('Setting End from localstorage.')
+    livewrap.end = storedEnd;
+  }
 
   if (livewrap.start) {
-    const startDate = (new Date(livewrap.start - tzoffset)).toISOString().split('.')[0];
+    const startDate = convertToDateInput(livewrap.start);
     start.value = startDate;
   }
 
@@ -645,6 +669,8 @@ window.customElements.define('livestream-wrapper', LiveStreamWrapper);
   document.querySelector('#setTime').addEventListener('click', () => {
     livewrap.start = start.value;
     livewrap.end = end.value;
+    localStorage.setItem('start', start.value);
+    localStorage.setItem('end', end.value);
   });
 
   start.addEventListener('change', event => {
@@ -653,13 +679,9 @@ window.customElements.define('livestream-wrapper', LiveStreamWrapper);
     const endDate = date.setTime(date.getTime() + 60 * 1000);
     end.value = convertToDateInput(endDate);
   });
-  end.addEventListener('change', event => {
-    //livewrap.end = event.target.value;
-  });
   livewrap.addEventListener('all', event => {
     console.log('Event: ', event.detail);
   });
-  
 
   const simpleTest = document.querySelector('#simpleTest');
   simpleTest.addEventListener('click', () => {
@@ -677,10 +699,6 @@ window.customElements.define('livestream-wrapper', LiveStreamWrapper);
     livewrap.end = new Date(newEnd)
 
   })
-
-  function convertToDateInput(date) {
-    return (new Date(date - tzoffset)).toISOString().split('.')[0];
-  }
 
 </script>
 
