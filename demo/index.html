@@ -14,15 +14,19 @@
         visibility: hidden;
       }
       .fadeOut {
-        visibility: hidden;
-        opacity: 0;
-        transition: visibility 0s 300ms, opacity 300ms ease-in-out;
+        animation: fadeout 300ms
       }
       .fadeIn {
-        visibility: visible;
-        opacity: 1;
-        transition: visibility 0s 300ms, opacity 300ms ease-in-out;
+        animation: fadein 1s;
       }
+      @keyframes fadein {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      } 
+      @keyframes fadeout {
+        from { opacity: 1; }
+        to   { opacity: 0; }
+      }            
       vds-media:not(:defined) {
         visibility: hidden;
       }
@@ -32,8 +36,8 @@
     <article class="container">
       
       <livestream-wrapper
-        start="Mon Nov 20 2022 15:05:02 GMT-0500"
-        end="Mon Nov 20 2022 15:07:02 GMT-0500"
+        start="Mon Nov 21 2022 15:05:02 GMT-0500"
+        end="Mon Nov 21 2022 15:07:02 GMT-0500"
         >
 
         <div slot="landing" class="landing playerblock">
@@ -41,7 +45,7 @@
         </div>
 
         <div slot="start" class="start playerblock">
-          <section>
+          <section data-transition>
             <h1>Preshow Banner</h1>
             <div><span data-countdown-clock></span>, <span data-countdown></span></div>
             <div><span data-localDate></span> <span data-localTime></span></div>
@@ -49,6 +53,7 @@
         </div>
 
         <div slot="player" class="live playerblock sixteen_by_nine">
+          <section data-transition>
           <vds-media autoplay class="sixteen_by_nine" autoplay can-play can-started autoplay-error>
               <vds-video poster="test_media/poster.png" class="sixteen_by_nine">
                 <video autoplay src="test_media/720p.mp4" class="sixteen_by_nine"></video>
@@ -121,10 +126,13 @@
               </svg>
             </div>
           </vds-media>
+          <section data-transition>
         </div>
 
         <div slot="end" class="end playerblock">
+          <section data-transition>
           <h1>The Event is Over, Thanks for Watching</h1>
+          </section>
         </div>
 
       </livestream-wrapper>
@@ -208,7 +216,7 @@
   const simpleTest = document.querySelector('#simpleTest');
   simpleTest.addEventListener('click', () => {
     const now = new Date();
-    const newStart = now.setTime(now.getTime() + 30 * 1000); // +30sec.
+    const newStart = now.setTime(now.getTime() + 10 * 1000); // +30sec.
 
     const newStartDate = new Date(newStart);
     const newEnd = newStartDate.setTime(newStartDate.getTime() + 30 * 1000); // Ends 30sec after.

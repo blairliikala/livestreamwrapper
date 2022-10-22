@@ -3,7 +3,7 @@
   "description": "A native component to help with the start, playback and ending of live streams, or simulated live streams.",
   "license": "MIT",
   "author": "Blair Liikala (https://blairliikala.com)",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "livestream-wrapper.js",
   "module": "livestream-wrapper.js",
   "repository": {

@@ -27,6 +27,8 @@ export class LiveStreamWrapper extends HTMLElement {
   css = `<style>
     .hidden {
       display: none;
+      visibility: hidden;
+      opacity: 0;
     }
   </style>`;
 
@@ -218,14 +220,14 @@ export class LiveStreamWrapper extends HTMLElement {
     if (this.#hasInteracted) {
       this.#setState(this.#start, this.#end);
       this.#startClock();
-      return;      
+      return;
     }
 
     this.setLanding();
     const startButton = this.querySelector('[data-click]');
     if (startButton) {
       startButton.addEventListener('click', async () => {
-        await LiveStreamWrapper.fadeOut(startButton);
+        await this.#fadeOut(startButton);
         this.#startClock();
         this.#setState(this.#start, this.#end);
         this.#hasInteracted = true;
@@ -264,13 +266,13 @@ export class LiveStreamWrapper extends HTMLElement {
     this.#hidePostgame();
   }
 
-  setStart() {
+  async setStart() {
     this.#hideLanding();
-    this.#showPregame();
     this.#hidePlayer();
     this.#hidePostgame();
+    this.#showPregame();
 
-    if (!this.#isWaiting) {
+    if (!this.#isWaiting) {  
       this.#event('pre', 'Event has not yet started', {});
       // Make sure video is not already playing in background on page load.
       if (this.#getState(this.#start, this.#end) === 'pre') {
@@ -278,17 +280,21 @@ export class LiveStreamWrapper extends HTMLElement {
         if (player) player.pause();
       }
       this.#isWaiting = true;
+      const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
+      if (transition) this.#fadeIn(transition);
     }
   }
 
-  setLive() {
+  async setLive() {
     this.#hideLanding();
+    this.#hidePostgame();
+    const outgoing = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
+    if (outgoing) await this.#fadeOut(outgoing);
     this.#hidePregame();
     this.#showPlayer();
-    this.#hidePostgame();
 
-    if (!this.#isLive) {
-      this.#event('isLive', 'Is Live', {});
+    if (!this.#isLive) {  
+      this.#event('isLive', 'Is Live', {});      
       const player = this.querySelector('video');
       if (player) {
         if (player.paused) player.play();
@@ -306,6 +312,8 @@ export class LiveStreamWrapper extends HTMLElement {
         }
       }
       this.#isLive = true;
+      const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.player);
+      if (transition) this.#fadeIn(transition);
     }
 
   }
@@ -316,6 +324,8 @@ export class LiveStreamWrapper extends HTMLElement {
     if (!this.#isLiveToVOD) {
       this.#hidePlayer();
       this.#showPostgame();
+      const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.end);
+      if (transition) this.#fadeIn(transition);      
     }
     if (this.#isLiveToVOD) {
       this.#hidePostgame();
@@ -447,11 +457,19 @@ export class LiveStreamWrapper extends HTMLElement {
     return false;
   }
 
-  static async fadeOut(div) {
+  static getTransitionDiv(shadowDiv) {
+    const divs = shadowDiv.assignedElements({flatten: true});
+    if (divs && divs.length > 0) {
+      return divs[0].querySelector('[data-transition]');
+    }
+    return false;
+  }
+
+  async #fadeOut(div) {
     div.classList.add('fadeOut');
     div.classList.remove('fadeIn');
     return new Promise(resolve => {
-      div.addEventListener('transitionend', () => {
+      div.addEventListener('animationend', () => {
         div.remove();
         resolve();
       });
@@ -459,9 +477,12 @@ export class LiveStreamWrapper extends HTMLElement {
   }
 
   async #fadeIn(div) {
+    div.classList.remove('fadeOut');
     div.classList.add('fadeIn');
     return new Promise(resolve => {
-      div.addEventListener('transitionend', resolve);
+      div.addEventListener('animationend', () => {
+        resolve()
+      });
     });
   }
 }
