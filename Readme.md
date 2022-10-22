@@ -7,6 +7,12 @@ Slots allow customization of each screen, and shown or hidden depending on the s
 Demo:
 [https://livestreamwrapper.vercel.app/](https://livestreamwrapper.vercel.app/)
 
+## Script
+
+```html
+<script type="module" src="https://unpkg.com/livestream-wrapper"></script>
+  ```
+
 ## Basic Layout
 
 ```html
