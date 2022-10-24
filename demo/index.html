@@ -22,11 +22,11 @@
       @keyframes fadein {
         from { opacity: 0; }
         to   { opacity: 1; }
-      } 
+      }
       @keyframes fadeout {
         from { opacity: 1; }
         to   { opacity: 0; }
-      }            
+      }
       vds-media:not(:defined) {
         visibility: hidden;
       }
@@ -34,10 +34,10 @@
   </head>
   <body>
     <article class="container">
-      
+
       <livestream-wrapper
-        start="Mon Nov 21 2022 15:05:02 GMT-0500"
-        end="Mon Nov 21 2022 15:07:02 GMT-0500"
+        start="Mon Nov 25 2022 15:05:02 GMT-0500"
+        end="Mon Nov 25 2022 15:07:02 GMT-0500"
         >
 
         <div slot="landing" class="landing playerblock">
@@ -55,8 +55,8 @@
         <div slot="player" class="live playerblock sixteen_by_nine">
           <section data-transition>
           <vds-media autoplay class="sixteen_by_nine" autoplay can-play can-started autoplay-error>
-              <vds-video poster="test_media/poster.png" class="sixteen_by_nine">
-                <video autoplay src="test_media/720p.mp4" class="sixteen_by_nine"></video>
+              <vds-video poster="test_media/poster.png" class="sixteen_by_nine" playsinline>
+                <video autoplay playsinline src="test_media/720p.mp4" class="sixteen_by_nine"></video>
               </vds-video>
               <article class="media-controls">
                 <header class="controls_header">
@@ -146,6 +146,8 @@
 
       <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">30sec Test</button>
 
+      <p id="hasTapped"></p>
+
     </article>
   </body>
 
@@ -166,7 +168,7 @@
 <script type="module">
 
   function convertToDateInput(date) {
-    const tzoffset = (new Date()).getTimezoneOffset() * 60000; 
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
     return (new Date(date - tzoffset)).toISOString().split('.')[0];
   }
 
@@ -229,6 +231,21 @@
     livewrap.end = new Date(newEnd)
 
   })
+
+
+  // Interaction Testing.
+  const events = [
+    'mousedown', 'keydown',
+    'scroll', 'touchstart'
+  ];
+  events.forEach( event => {
+    document.addEventListener(event, () => {
+      console.log('Event Fired: '+event);
+      hasTapped.innerHTML = "Interacted! "+event;
+    })
+  })
+
+
 
 </script>
 

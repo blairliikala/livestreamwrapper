@@ -43,9 +43,18 @@ livestream-wrapper:not(:defined) {
 }
 /* Helps with state transitions */
 .fadeOut {
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0s 300ms, opacity 300ms ease-in-out;
+  animation: fadeout 300ms
+}
+.fadeIn {
+  animation: fadein 1s;
+}
+@keyframes fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeout {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 </style>
 
@@ -60,6 +69,7 @@ livestream-wrapper:not(:defined) {
   </div>
 
   <div slot="start">
+    <section data-transition>
       <h1>Preshow Banner</h1>
       <ul>
         <!-- Clock options -->
@@ -69,14 +79,19 @@ livestream-wrapper:not(:defined) {
         <li><span data-localTime></span></li>
       </ul>
     </section>
+    </section>
   </div>
 
   <div slot="player">
+    <section data-transition>
     Add your player here <video></video>
+    </section>
   </div>
 
   <div slot="end">
+    <section data-transition>
     <h1>The Event is Over, Thanks for Watching</h1>
+    </section>
   </div>
 
 </livesteram-wrapper>
@@ -99,6 +114,7 @@ There are a few ways to end an event:
 | end | When the app should show the end slot.  An ISO 8601 string or similar string can be converted to a javascript `Date` element |
 | duration | Length that the player slot should be shown in seconds. Used instead of the `end` parameters. |
 | live-to-vod | Boolean that will continue to show the player when the event is finished. |
+| simulated-live | Boolean to enable an mp4 to play as if live. |
 
 ```html
 <livestream-wrapper
