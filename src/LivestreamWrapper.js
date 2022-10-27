@@ -55,8 +55,8 @@ export class LiveStreamWrapper extends HTMLElement {
     });
     */
 
-    // Listen for any interactions.
-    /*
+    /* Listen for any interactions.
+    This does not work exactly as expected on iOS yet.
     const events = [
       'mousedown', 'keydown',
       'scroll', 'touchstart'
@@ -236,31 +236,18 @@ export class LiveStreamWrapper extends HTMLElement {
       console.warn('No end date or duration set, will try using the video ending event.');
     }
 
-    if (this.#getState(this.#start, this.#end) === 'end') {
-      this.#setState(this.#start, this.#end);
-      this.#startClock();
-      return;
-    }
-
-    if (this.#hasInteracted) {
-      this.#setState(this.#start, this.#end);
-      this.#startClock();
-      return;
-    }
-
     this.setLanding();
+    this.#event('landing', 'Waiting for Interaction.', {});
     const startButton = this.querySelector('[data-click]');
     if (startButton) {
       startButton.addEventListener('click', async () => {
         await LiveStreamWrapper.fadeOut(startButton);
-        this.#startClock();
-        this.#setState(this.#start, this.#end);
         this.#hasInteracted = true;
       });
-    } else {
-      this.#startClock();
-      this.#setState(this.#start, this.#end);
     }
+    this.#startClock();
+    this.#setState(this.#start, this.#end);
+
   }
 
   #getState(start, end) {
@@ -270,6 +257,8 @@ export class LiveStreamWrapper extends HTMLElement {
         return 'end';
       case now > start:
         return 'live';
+      case now < start && !this.#hasInteracted:
+        return 'landing'; 
       case now < start:
         return 'pre';
       default:
@@ -319,7 +308,7 @@ export class LiveStreamWrapper extends HTMLElement {
     this.#showPlayer();
 
     if (!this.#isLive) {
-      this.#event('isLive', 'Is Live', {});
+      this.#event('live', 'Is Live', {});
       const player = this.querySelector('video');
       if (player) {
         if (player.paused) player.play();
