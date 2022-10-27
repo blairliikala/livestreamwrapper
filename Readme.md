@@ -138,6 +138,17 @@ elm.hasInteracted = true;
 console.log(elm.time) // Object of times before start.
 ```
 
+## Events
+
+| Name | Description |
+| - | - |
+| landing | Fired when initial load is complete and the landing slot is displayed. |
+| pre | Fired when the countdown slot is displayed |
+| live | Fired when the player slot is displayed |
+| seeking | Fired when the component tries to seek to the current live time. |
+| end | Fired when the end slot is displayed |
+| error | Fired when there is an error |
+
 ### About Autoplay and Interactions
 
 Browsers require a click or interaction in order to allow autoplaying with audio. The component has an initial `data-click` button that can be added to the player so that when the player starts there will be audio. This interaction is set by the `hasInteracted` property, and alternatively can be changed with an API call if an interaction happened somewhere else on the page.
