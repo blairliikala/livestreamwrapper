@@ -212,7 +212,7 @@
     end.value = convertToDateInput(endDate);
   });
   livewrap.addEventListener('all', event => {
-    console.log('Event: ', event.detail);
+    console.table(event.detail);
   });
 
   const simpleTest = document.querySelector('#simpleTest');
