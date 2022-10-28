@@ -3,13 +3,13 @@
   "description": "A native component to help with the start, playback and ending of live streams, or simulated live streams.",
   "license": "MIT",
   "author": "Blair Liikala (https://blairliikala.com)",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "livestream-wrapper.js",
   "module": "livestream-wrapper.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/blairliikala/livestreamwrapper"
-  },  
+  },
   "scripts": {
     "analyze": "cem analyze --litelement",
     "start": "web-dev-server",
@@ -20,7 +20,7 @@
     "@custom-elements-manifest/analyzer": "^0.6.4",
     "@open-wc/eslint-config": "^8.0.2",
     "@web/dev-server": "^0.1.35",
-    "eslint": "^8.0.0",
+    "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.3.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
