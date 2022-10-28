@@ -126,7 +126,7 @@
               </svg>
             </div>
           </vds-media>
-          <section data-transition>
+        </section>
         </div>
 
         <div slot="end" class="end playerblock">
@@ -212,7 +212,7 @@
     end.value = convertToDateInput(endDate);
   });
   livewrap.addEventListener('all', event => {
-    console.table(event.detail);
+    console.log(event.detail);
   });
 
   const simpleTest = document.querySelector('#simpleTest');
@@ -240,8 +240,8 @@
   ];
   events.forEach( event => {
     document.addEventListener(event, () => {
-      console.log('Event Fired: '+event);
-      hasTapped.innerHTML = "Interacted! "+event;
+      console.log(`Event Fired: ${event}`);
+      document.querySelector('#hasTapped').innerHTML = `Interacted! ${event}`;
     })
   })
 
