@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Live Wrapper</title>
+    <link href="demo.css" rel="stylesheet" type="text/css">
+    <script src="https://unpkg.com/@mux/mux-player"></script>
+
+    <style>
+      livestream-wrapper:not(:defined) {
+        visibility: hidden;
+      }
+      .fadeOut {
+        animation: fadeout 300ms
+      }
+      .fadeIn {
+        animation: fadein 1s;
+      }
+      @keyframes fadein {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes fadeout {
+        from { opacity: 1; }
+        to   { opacity: 0; }
+      }
+  </style>
+  </head>
+  <body>
+    <article class="container">
+
+      <livestream-wrapper
+        start="Mon Nov 25 2022 15:05:02 GMT-0500"
+        end="Mon Nov 25 2022 15:07:02 GMT-0500"
+        >
+
+        <div slot="landing" class="landing playerblock">
+          <button data-click>Play</button>
+        </div>
+
+        <div slot="start" class="start playerblock">
+          <section data-transition>
+            <h1>Preshow Banner</h1>
+            <div><span data-countdown-clock></span>, <span data-countdown></span></div>
+            <div><span data-localDate></span> <span data-localTime></span></div>
+          </section>
+        </div>
+
+        <div slot="player" class="live playerblock sixteen_by_nine">
+          <section data-transition>
+            <mux-player
+              playback-id="v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM"
+              stream-type="live"
+              style="width:100%"
+              autoplay
+            ></mux-player>
+          </section>
+        </div>
+
+        <div slot="end" class="end playerblock">
+          <section data-transition>
+          <h1>The Event is Over, Thanks for Watching</h1>
+          </section>
+        </div>
+
+      </livestream-wrapper>
+
+      <hr />
+
+      <h4>Testing</h4>
+      <label>Start <input type="datetime-local" id="start"></label>
+      <label>End <input type="datetime-local" id="end"></label>
+      <button id="setTime">Set</button>
+
+      <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">30sec Test</button>
+
+      <p id="hasTapped"></p>
+
+    </article>
+  </body>
+
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/bundle.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-media.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-mute-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-volume-slider.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-play-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-slider-video.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-fullscreen-button.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-time.js"></script>
+
+<script type="module">
+  import "../../livestream-wrapper.js";
+</script>
+
+<!-- For Testing -->
+<script type="module">
+
+  function convertToDateInput(date) {
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    return (new Date(date - tzoffset)).toISOString().split('.')[0];
+  }
+
+  const start = document.querySelector('#start');
+  const end = document.querySelector('#end');
+  const livewrap = document.querySelector('livestream-wrapper');
+
+  const storedStart = localStorage.getItem('start');
+  const storedEnd = localStorage.getItem('end');
+
+  if (storedStart) {
+    console.debug('Setting Start from localstorage.')
+    livewrap.start = storedStart;
+  }
+  if (storedEnd) {
+    console.debug('Setting End from localstorage.')
+    livewrap.end = storedEnd;
+  }
+
+  if (livewrap.start) {
+    const startDate = convertToDateInput(livewrap.start);
+    start.value = startDate;
+  }
+
+  if (livewrap.end) {
+    const endDate = convertToDateInput(livewrap.end)
+    end.value = endDate;
+  }
+
+  document.querySelector('#setTime').addEventListener('click', () => {
+    livewrap.start = start.value;
+    livewrap.end = end.value;
+    localStorage.setItem('start', start.value);
+    localStorage.setItem('end', end.value);
+  });
+
+  start.addEventListener('change', event => {
+    if (!event.target.value) return;
+    const date = new Date(event.target.value);
+    const endDate = date.setTime(date.getTime() + 60 * 1000);
+    end.value = convertToDateInput(endDate);
+  });
+  livewrap.addEventListener('all', event => {
+    console.log(event.detail);
+  });
+
+  const simpleTest = document.querySelector('#simpleTest');
+  simpleTest.addEventListener('click', () => {
+    const now = new Date();
+    const newStart = now.setTime(now.getTime() + 10 * 1000); // +30sec.
+
+    const newStartDate = new Date(newStart);
+    const newEnd = newStartDate.setTime(newStartDate.getTime() + 10 * 1000); // Ends 30sec after.
+    console.log(new Date(newStart), new Date(newEnd));
+
+    start.value = convertToDateInput(new Date(newStart));
+    end.value = convertToDateInput(new Date(newEnd));
+
+    livewrap.start = new Date(newStart)
+    livewrap.end = new Date(newEnd)
+
+  })
+
+  // Interaction Testing.
+  const events = [
+    'mousedown', 'keydown',
+    'scroll', 'touchstart'
+  ];
+  events.forEach( event => {
+    document.addEventListener(event, () => {
+      console.log(`Event Fired: ${event}`);
+      document.querySelector('#hasTapped').innerHTML = `Interacted! ${event}`;
+    })
+  })
+
+  const muxplayer = document.querySelector('mux-player');
+  if (!muxplayer) console.error('No Mux Player Found for demo.');
+  livewrap.addEventListener('live', () => {
+    muxplayer.play();
+  });
+
+</script>
+
+</html>
