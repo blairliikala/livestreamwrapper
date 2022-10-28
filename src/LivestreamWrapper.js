@@ -39,22 +39,6 @@ export class LiveStreamWrapper extends HTMLElement {
       this.#init();
     }
 
-    /* We still want the clock running if the real clock is still ticking.
-    window.addEventListener("offline", () => {
-      this.#stopClock();
-    });
-    window.addEventListener("online", () => {
-      this.#startClock();
-    });
-    window.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        this.#startClock();
-      } else 
-        this.#stopClock();
-      }
-    });
-    */
-
     /* Listen for any interactions.
     This does not work exactly as expected on iOS yet.
     const events = [
@@ -76,7 +60,8 @@ export class LiveStreamWrapper extends HTMLElement {
       'start',
       'end',
       'duration',
-      'live-to-vod'
+      'live-to-vod',
+      'simulated-live'
     ];
   }
 
@@ -258,7 +243,7 @@ export class LiveStreamWrapper extends HTMLElement {
       case now > start:
         return 'live';
       case now < start && !this.#hasInteracted:
-        return 'landing'; 
+        return 'landing';
       case now < start:
         return 'pre';
       default:
@@ -334,26 +319,26 @@ export class LiveStreamWrapper extends HTMLElement {
 
   }
 
-  setEnd() {
+  async setEnd() {
     this.#hideLanding();
     this.#hidePregame();
     if (!this.#isLiveToVOD) {
       this.#hidePlayer();
       this.#showPostgame();
-      const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.end);
-      if (transition) LiveStreamWrapper.fadeIn(transition);
+      const transitionIn = LiveStreamWrapper.getTransitionDiv(this.#divs.end);
+      if (transitionIn) LiveStreamWrapper.fadeIn(transitionIn);
     }
     if (this.#isLiveToVOD) {
       this.#hidePostgame();
     }
 
-    const player = this.querySelector('video');
-    if (player) player.pause();
-
-    //this.#stopClock();
     if (!this.#isOver) {
       this.#event('end', 'Event has ended', {});
       this.#isOver = true;
+      const divs = this.#divs.player.assignedElements({flatten: true});
+      if (divs && divs.length > 0) {
+        return divs[0].remove();
+      }
     }
   }
 
