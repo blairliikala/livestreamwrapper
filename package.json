@@ -1,6 +1,13 @@
 {
   "name": "livestream-wrapper",
   "description": "A native component to help with the start, playback and ending of live streams, or simulated live streams.",
+  "keywords": [
+    "video",
+    "streaming",
+    "live",
+    "component",
+    "events"
+  ],
   "license": "MIT",
   "author": "Blair Liikala (https://blairliikala.com)",
   "version": "0.0.7",

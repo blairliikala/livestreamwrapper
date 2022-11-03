@@ -240,8 +240,8 @@
   ];
   events.forEach( event => {
     document.addEventListener(event, () => {
-      console.log(`Event Fired: ${event}`);
-      document.querySelector('#hasTapped').innerHTML = `Interacted! ${event}`;
+      console.log('Event Fired: '+event);
+      document.querySelector('#hasTapped').innerHTML = "Interacted! "+event;
     })
   })
 
