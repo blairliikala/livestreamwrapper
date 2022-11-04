@@ -56,7 +56,7 @@
           <section data-transition>
           <vds-media autoplay class="sixteen_by_nine" autoplay can-play can-started autoplay-error>
               <vds-video poster="test_media/poster.png" class="sixteen_by_nine" playsinline>
-                <video autoplay playsinline src="test_media/720p.mp4" class="sixteen_by_nine"></video>
+                <video autoplay muted playsinline src="test_media/720p.mp4" class="sixteen_by_nine"></video>
               </vds-video>
               <article class="media-controls">
                 <header class="controls_header">
@@ -230,14 +230,11 @@
     livewrap.start = new Date(newStart)
     livewrap.end = new Date(newEnd)
 
-  })
+  });
 
 
   // Interaction Testing.
-  const events = [
-    'mousedown', 'keydown',
-    'scroll', 'touchstart'
-  ];
+  const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
   events.forEach( event => {
     document.addEventListener(event, () => {
       console.log('Event Fired: '+event);

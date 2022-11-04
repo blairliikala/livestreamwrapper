@@ -10,12 +10,14 @@ export class LiveStreamWrapper extends HTMLElement {
     startlocaltime: undefined,
     startlocaldate: undefined,
   };
-  #status = 'inital';
+  #state = {
+    status: 'inital',
+    previous: ''
+  };
   #isWaiting  = false;
   #isLive = false;
   #isOver = false;
   #isEndOverride = false;
-  #hasSeeked = false;
   #hasInteracted = false;
 
   // Params
@@ -39,14 +41,17 @@ export class LiveStreamWrapper extends HTMLElement {
       this.#init();
     }
 
-    /* Listen for any interactions.
-    This does not work exactly as expected on iOS yet.
+    /* Listen for any interactions. */
+    // This does not work exactly as expected on iOS yet.
+    /*
     const events = [
       'mousedown', 'keydown',
       'scroll', 'touchstart'
     ];
+
     events.forEach( event => {
-      document.addEventListener(event, () => {
+      document.addEventListener(event, (e) => {
+        console.log(event)
         this.#hasInteracted = true;
         this.#init();
       })
@@ -97,8 +102,8 @@ export class LiveStreamWrapper extends HTMLElement {
   get end() {
     return this.#end
   }
-  get status() {
-    return this.#status;
+  get state() {
+    return this.#state;
   }
   get hasInteracted() {
     return this.#hasInteracted;
@@ -149,6 +154,7 @@ export class LiveStreamWrapper extends HTMLElement {
   }
 
   #create() {
+    this.#reset();
 
     this.#start    = this.getAttribute('start') || ''; // Required.
     this.#end      = this.getAttribute('end') || '';
@@ -228,6 +234,7 @@ export class LiveStreamWrapper extends HTMLElement {
       startButton.addEventListener('click', async () => {
         await LiveStreamWrapper.fadeOut(startButton);
         this.#hasInteracted = true;
+        this.#setState(this.#start, this.#end);
       });
     }
     this.#startClock();
@@ -247,18 +254,21 @@ export class LiveStreamWrapper extends HTMLElement {
       case now < start:
         return 'pre';
       default:
+        console.debug('No State set.', start, end);
         return '';
     }
   }
 
   #setState(start, end) {
-    this.#status = this.#getState(start, end);
-    if (this.#status === 'end') this.setEnd();
-    if (this.#status === 'live') this.setLive();
-    if (this.#status === 'pre') this.setStart();
+    const currentStatus = this.#getState(start, end);
+    if (currentStatus !== this.#state.status) this.#state.previous = this.#state.status;
+    this.#state.status = currentStatus;
+    if (this.#state.status === 'end') this.setEnd();
+    if (this.#state.status === 'live') this.setLive();
+    if (this.#state.status === 'pre') this.setStart();
   }
 
-  setLanding() {
+  async setLanding() {
     this.#showLanding();
     this.#hidePregame();
     this.#hidePlayer();
@@ -280,41 +290,46 @@ export class LiveStreamWrapper extends HTMLElement {
       }
       this.#isWaiting = true;
       const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
-      if (transition) LiveStreamWrapper.fadeIn(transition);
+      if (transition) await LiveStreamWrapper.fadeIn(transition);
     }
   }
 
   async setLive() {
     this.#hideLanding();
     this.#hidePostgame();
-    const outgoing = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
-    if (outgoing) await LiveStreamWrapper.fadeOut(outgoing);
-    this.#hidePregame();
-    this.#showPlayer();
 
     if (!this.#isLive) {
+      this.#isLive = true;
+      this.#event('live', 'Is Live', {});
+
+      if (this.#state.previous === 'pre') {
+        console.log(this.#state.previous)
+        const outgoing = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
+        //if (outgoing.classList.contains('fadeOut')) await LiveStreamWrapper.fadeOut(outgoing); // TODO check what happens if no
+        await LiveStreamWrapper.fadeOut(outgoing);
+      }
+      this.#hidePregame();
+      this.#showPlayer();
+
       this.#event('live', 'Is Live', {});
       const player = this.querySelector('video');
       if (player) {
         if (player.paused) player.play();
         player.onplay = () => {
-          //if (!this.#hasSeeked) {
-            if (this.#simulatedlive) {
-              this.#event('seeking', 'seeing to wallclock time', {});
-              const offset = (new Date() - this.#start) / 1000;
-              player.currentTime = offset;
-            }
-            //this.#hasSeeked = true;
-          //}
+          if (this.#simulatedlive) {
+            this.#event('seeking', 'seeing to wallclock time', {});
+            const offset = (new Date() - this.#start) / 1000;
+            player.currentTime = offset;
+          }
         }
         player.onended = () => {
           this.#isEndOverride = true;
           this.#setState(this.#start, this.#end);
         }
       }
-      this.#isLive = true;
       const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.player);
       if (transition) LiveStreamWrapper.fadeIn(transition);
+      return;
     }
 
   }
@@ -365,6 +380,16 @@ export class LiveStreamWrapper extends HTMLElement {
   }
   #hidePostgame() {
     this.#divs.end.classList.add('hidden');
+  }
+
+  #reset() {
+    this.#state.status = 'inital';
+    this.#state.previous = '';
+    this.#isWaiting  = false;
+    this.#isLive = false;
+    this.#isOver = false;
+    this.#isEndOverride = false;
+    // this.#hasInteracted = false; Likely an interaction has already happened.
   }
 
   #startClock() {
@@ -467,22 +492,23 @@ export class LiveStreamWrapper extends HTMLElement {
   }
 
   static fadeOut(div) {
+    if (div.classList.contains('fadeOut')) return Promise.resolve();
     div.classList.add('fadeOut');
     div.classList.remove('fadeIn');
     return new Promise(resolve => {
       div.addEventListener('animationend', () => {
-        div.remove();
         resolve();
       });
     });
   }
 
   static fadeIn(div) {
+    if (div.classList.contains('fadeIn')) return Promise.resolve();
     div.classList.remove('fadeOut');
     div.classList.add('fadeIn');
     return new Promise(resolve => {
       div.addEventListener('animationend', () => {
-        resolve()
+        resolve();
       });
     });
   }
