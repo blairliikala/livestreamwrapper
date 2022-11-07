@@ -36,8 +36,8 @@
     <article class="container">
 
       <livestream-wrapper
-        start="Mon Nov 25 2022 15:05:02 GMT-0500"
-        end="Mon Nov 25 2022 15:07:02 GMT-0500"
+        start="Mon Dec 1 25 2022 15:05:02 GMT-0500"
+        end="Mon Dec 1 2022 15:07:02 GMT-0500"
         >
 
         <div slot="landing" class="landing playerblock">
@@ -170,6 +170,11 @@
   function convertToDateInput(date) {
     const tzoffset = (new Date()).getTimezoneOffset() * 60000;
     return (new Date(date - tzoffset)).toISOString().split('.')[0];
+  }
+
+  function addTime(seconds, now = new Date()) {
+    const newStart = now.setTime(now.getTime() + seconds * 1000);
+    return new Date(newStart);
   }
 
   const start = document.querySelector('#start');
