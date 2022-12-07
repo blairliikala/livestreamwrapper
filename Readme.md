@@ -2,16 +2,29 @@
 
 A native component to help manage the start, playback and ending of live streams, or simulated live streams.
 
-Slots allow customization of each screen, and shown or hidden depending on the state.  Also included are helpers for countdowns, and events for additional scripting.
+Slots allow customization of each screen, and shown or hidden depending on the state.  Includes a helper for countdowns, and events for additional scripting.
 
 Demo:
 [https://livestreamwrapper.vercel.app/](https://livestreamwrapper.vercel.app/)
 
 ## Script
 
+Bundled as an ES6 component:
+
 ```html
 <script type="module" src="https://unpkg.com/livestream-wrapper"></script>
   ```
+
+```javascript
+import { LiveStreamWrapper} from "https://unpkg.com/livestream-wrapper";
+```
+
+```html
+<script type="module">
+  import "livestream-wrapper.js";
+</script>
+```
+
 
 ## Basic Layout
 
