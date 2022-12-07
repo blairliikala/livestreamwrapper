@@ -303,13 +303,13 @@ export class LiveStreamWrapper extends HTMLElement {
       this.#event('live', 'Is Live', {});
 
       if (this.#state.previous === 'pre') {
-        console.log(this.#state.previous)
         const outgoing = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
         //if (outgoing.classList.contains('fadeOut')) await LiveStreamWrapper.fadeOut(outgoing); // TODO check what happens if no
         await LiveStreamWrapper.fadeOut(outgoing);
       }
       this.#hidePregame();
       this.#showPlayer();
+      console.log('setting live');
 
       this.#event('live', 'Is Live', {});
       const player = this.querySelector('video');
@@ -352,7 +352,14 @@ export class LiveStreamWrapper extends HTMLElement {
       this.#isOver = true;
       const divs = this.#divs.player.assignedElements({flatten: true});
       if (divs && divs.length > 0) {
-        return divs[0].remove();
+        // Remove from DOM. However can't then go back to start and re-play.
+        // Clone will break event handlers for a player.
+        // return divs[0].remove();
+        // Try to stop any playing video.
+        try {
+          const possiblevideo = divs[0].querySelector('video');
+          if (possiblevideo) possiblevideo.pause();
+        } catch (e) {}
       }
     }
   }
