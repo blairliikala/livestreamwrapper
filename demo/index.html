@@ -36,8 +36,8 @@
     <article class="container">
 
       <livestream-wrapper
-        start="Mon Dec 7 2022 15:05:02 GMT-0500"
-        end="Mon Dec 7 2022 15:07:02 GMT-0500"
+        start="Sat Jan 7 2023 15:05:02 GMT-0500"
+        end="Sat Jan 7 2023 15:07:02 GMT-0500"
         >
 
         <div slot="landing" class="landing playerblock">
@@ -146,19 +146,16 @@
 
       <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">30sec Test</button>
 
+      <p>Source on <a href="https://github.com/blairliikala/livestreamwrapper">github</a>.</p>
+
+      <!--
       <p id="hasTapped"></p>
+      -->
 
     </article>
   </body>
 
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/bundle.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-media.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-mute-button.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-volume-slider.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-play-button.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-slider-video.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-fullscreen-button.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/define/vds-time.js"></script>
 
 <script type="module">
   import "../../livestream-wrapper.js";
@@ -239,6 +236,7 @@
 
 
   // Interaction Testing.
+  /*
   const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
   events.forEach( event => {
     document.addEventListener(event, () => {
@@ -246,6 +244,7 @@
       document.querySelector('#hasTapped').innerHTML = "Interacted! "+event;
     })
   })
+  */
 
 
 

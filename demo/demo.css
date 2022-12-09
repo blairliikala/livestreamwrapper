@@ -20,8 +20,8 @@ a {
   color:white;
 }
 .container {
-  max-width: 800px;
-  margin: 10em auto;
+  max-width: 1000px;
+  margin: 6em auto;
 }
 
 /*** Styles inside the Component ***/
