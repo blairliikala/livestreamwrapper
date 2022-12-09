@@ -129,9 +129,9 @@ export class LiveStreamWrapper extends HTMLElement {
       ${this.css}
       <section id="root"></section>
       <slot name="landing"></slot>
-      <slot name="start"></slot>
+      <slot name="preshow"></slot>
+      <slot name="live"></slot>
       <slot name="end"></slot>
-      <slot name="player"></slot>
     `;
 
     const shadow = this.attachShadow({ mode: 'open' });
@@ -141,9 +141,9 @@ export class LiveStreamWrapper extends HTMLElement {
     this.#divs = {
       root: this.shadowRoot?.querySelector('#root'),
       landing: this.shadowRoot?.querySelector('slot[name=landing]'),
-      start: this.shadowRoot?.querySelector('slot[name=start]'),
+      start: this.shadowRoot?.querySelector('slot[name=preshow]'),
       end: this.shadowRoot?.querySelector('slot[name=end]'),
-      player: this.shadowRoot?.querySelector('slot[name=player]'),
+      player: this.shadowRoot?.querySelector('slot[name=live]'),
       countdown: this.querySelector('[data-countdown]'),
       countdownClock: this.querySelector('[data-countdown-clock]'),
       localTime: this.querySelector('[data-localtime]'),

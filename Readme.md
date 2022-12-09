@@ -34,10 +34,10 @@ import { LiveStreamWrapper} from "https://unpkg.com/livestream-wrapper";
   <div slot="landing">
   </div>
 
-  <div slot="start">
+  <div slot="preshow">
   </div>
 
-  <div slot="player">
+  <div slot="live">
   </div>
 
   <div slot="end">
@@ -81,7 +81,7 @@ livestream-wrapper:not(:defined) {
     <button data-click>Play</button>
   </div>
 
-  <div slot="start">
+  <div slot="preshow">
     <section data-transition>
       <h1>Preshow Banner</h1>
       <ul>
@@ -95,7 +95,7 @@ livestream-wrapper:not(:defined) {
     </section>
   </div>
 
-  <div slot="player">
+  <div slot="live">
     <section data-transition>
     Add your player here <video></video>
     </section>
@@ -168,7 +168,7 @@ Browsers require a click or interaction in order to allow autoplaying with audio
 
 ## Slots
 
-There are 4 slots: Landing, Start, Player, and End that are cycled through during an event. HTML can be placed inside these slots and styled.
+There are 4 slots: `landing`, `preshow`, `live`, and `end` that are cycled through during an event. HTML can be placed inside these slots and styled.
 
 ### Landing
 
