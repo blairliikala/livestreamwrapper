@@ -37,6 +37,9 @@ import { LiveStreamWrapper} from "https://unpkg.com/livestream-wrapper";
   <div slot="preshow">
   </div>
 
+  <div slot="holding">
+  </div>  
+
   <div slot="live">
   </div>
 
@@ -95,22 +98,87 @@ livestream-wrapper:not(:defined) {
     </section>
   </div>
 
+  <div slot="holding">
+    <section data-transition>
+      <h3>Waiting for stream to start.</h3>
+    </section>
+  </div>  
+
   <div slot="live">
     <section data-transition>
-    Add your player here <video></video>
+      Add your player here <video></video>
     </section>
   </div>
 
   <div slot="end">
     <section data-transition>
-    <h1>The Event is Over, Thanks for Watching</h1>
+      <h1>The Event is Over, Thanks for Watching</h1>
     </section>
   </div>
 
 </livesteram-wrapper>
 ```
 
-## Ending an Event
+## Parameters
+
+| Name | Description | Default |
+| - | - | - |
+| `start` | Required. When the app should show the player slot.  An ISO 8601 string or similar string can be converted to a javascript `Date` element | null |
+| `end` | When the app should show the end slot.  An ISO 8601 string or similar string can be converted to a javascript `Date` element | null |
+| `duration` | Length that the player slot should be shown in seconds. Used instead of the `end` parameters. | null |
+| `live-to-vod` | Boolean that will continue to show the player when the event is finished. | false |
+| `simulated-live` | Boolean to enable an mp4 to play as if live. | false |
+| `ready` | Boolean to tell the componet to hold before showing the live player (see more below) | true |
+
+```html
+<livestream-wrapper
+  start="Thu Oct 20 2022 13:56:35 GMT-0500"
+  end="Thu Oct 20 2022 14:56:35 GMT-0500"
+  duration="600"
+  live-to-vod="true"
+  ready="false"
+>
+```
+
+## Properties
+
+In addition to the parameters:
+
+| Name | Description |
+| - | - |
+| `time` | An object of current countdowns in a few different formats. |
+| `hasInteracted` | Boolean. Set false until the `data-click` div is clicked. |
+| `state` | The name of the active slot |
+
+```javascript
+const component = document.querySelector('livestream-wrapper');
+component.hasInteracted = true;
+console.log(component.time) // Object of times before start.
+```
+
+## Events
+
+| Name | Description |
+| - | - |
+| `landing` | Triggered when initial load is complete and the landing slot is displayed. |
+| `pre` | Triggered when the countdown slot is displayed |
+| `holding` | Triggered when the state is waiting to be triggered from javascript to start after the live stream has started. |
+| `live` | FirTriggereded when the player slot is displayed |
+| `seeking` | Triggered when the component tries to seek to the current live time. |
+| `end` | Triggered when the end slot is displayed |
+| `error` | Triggered when there is an error |
+
+## More Info
+
+### About Autoplay and Interactions
+
+Browsers require a click or interaction in order to allow autoplaying with audio. The component has an initial `data-click` button that can be added to the player so that when the player starts there will be audio. This interaction is set by the `hasInteracted` property, and alternatively can be changed with an API call if an interaction happened somewhere else on the page.
+
+### About Holding - Stream should be live, but is not yet.
+
+This slot helps when the stream **should** be live, but is not streaming yet.  Live stream players usually assume the live stream feed has begun, so when an HLS endpoint is empty, or returns an error, before the stream starts the player usually throws an (ugly) error and may not restart. The Holding slot is a way to show a kinder message while waiting for the player to get a feed. This works best by polling an endpoint (or using webhsockets...etc) that can verify the stream is active. Then using javascript, set the `ready` property to `true` to allow the component to transition to the `live` slot where the player should be, and begin playing the stream.  If you are sure the stream will be active, or the player will handle empty stream links, you can omit this slot (or leave it blank);
+
+### Ending an Event
 
 There are a few ways to end an event:
 
@@ -119,75 +187,58 @@ There are a few ways to end an event:
 - Not specifying an end or duration will then end when the player emits an `end` event.
 - Live to VOD is when the on-demand recording should remain available after the end of the event.
 
-## Parameters
-
-| Name | Description |
-| - | - |
-| start | Required. When the app should show the player slot.  An ISO 8601 string or similar string can be converted to a javascript `Date` element |
-| end | When the app should show the end slot.  An ISO 8601 string or similar string can be converted to a javascript `Date` element |
-| duration | Length that the player slot should be shown in seconds. Used instead of the `end` parameters. |
-| live-to-vod | Boolean that will continue to show the player when the event is finished. |
-| simulated-live | Boolean to enable an mp4 to play as if live. |
-
-```html
-<livestream-wrapper
-  start="Thu Oct 20 2022 13:56:35 GMT-0500"
-  end="Thu Oct 20 2022 14:56:35 GMT-0500"
-  duration="600"
-  live-to-vod="true"
->
-```
-
-## Properties
-
-| Name | Description |
-| - | - |
-| hasInteracted | Boolean. Set false until the `data-click` div is clicked. |
-| time | An object of current countdowns in a few different formats. |
-
-```javascript
-const elm = document.querySelector('livestream-wrapper');
-elm.hasInteracted = true;
-console.log(elm.time) // Object of times before start.
-```
-
-## Events
-
-| Name | Description |
-| - | - |
-| landing | Fired when initial load is complete and the landing slot is displayed. |
-| pre | Fired when the countdown slot is displayed |
-| live | Fired when the player slot is displayed |
-| seeking | Fired when the component tries to seek to the current live time. |
-| end | Fired when the end slot is displayed |
-| error | Fired when there is an error |
-
-### About Autoplay and Interactions
-
-Browsers require a click or interaction in order to allow autoplaying with audio. The component has an initial `data-click` button that can be added to the player so that when the player starts there will be audio. This interaction is set by the `hasInteracted` property, and alternatively can be changed with an API call if an interaction happened somewhere else on the page.
-
 ## Slots
 
-There are 4 slots: `landing`, `preshow`, `live`, and `end` that are cycled through during an event. HTML can be placed inside these slots and styled.
+There are 5 slots: `landing`, `preshow`, `holding`, `live`, and `end` that are cycled through during an event. HTML can be placed inside these slots and styled.  Each is optional, but works best to have them in the markup.
 
 ### Landing
 
 | Name | Description |
 | - | - |
-| data-click | An element that a user clicks to show the countdown or stream.  This interaction is required for browsers to allow autoplay to work (with audio). |
+| `data-click` | An element that a user clicks to show the countdown or stream.  This interaction is required for browsers to allow autoplay to work (with audio). |
 
 `hasInteracted` can be changed via javascript to skip this step (see above), or the slot can be omitted.  If the slot is omitted, the video should be started as muted to allow autoplay to work, otherwise the user will need to click play when the stream begins.
+
+### Transitions
+
+Each slot can optionally have a transition applied for buttery awesomeness.  These transitions are native CSS animations that you as a developer can make. The CSS class names simply have to be `fadeIn` and `fadeOut` and the component will listen for the transition to start/stop.  Then an additional `div` with a `data-transition` attribute needs to be applied.
+
+```html
+<style>
+.fadeIn { ... }
+.fadeOut {
+  animation: fadeout 300ms
+}
+@keyframes fadeout {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+</style>
+
+...
+<div slot="live">
+  <section data-transition>
+  Add your player here <video></video>
+  </section>
+</div>
+...
+
+```
 
 ### Start
 
 | Name | Description |
 | - | - |
-| data-countdown-clock | A view in HH:MM:SS countdown till the start time |
-| data-countdown | Description of time remaining, such as "in 3 hours" |
-| data-localDate | Localized start date in the viewer's timezone. |
-| data-localTime | Localized start time in the viewer's timezone. |
+| `data-countdown-clock` | A view in HH:MM:SS countdown till the start time |
+| `data-countdown` | Description of time remaining, such as "in 3 hours" |
+| `data-localDate` | Localized start date in the viewer's timezone. |
+| `data-localTime` | Localized start time in the viewer's timezone. |
 
-### Player
+### Holding
+
+(No additional helpers)
+
+### Live
 
 (No additional helpers)
 
