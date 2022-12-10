@@ -11,10 +11,10 @@
 
     <style>
       livestream-wrapper:not(:defined) {
-        visibility: hidden;
+        visibility: hidden
       }
       .fadeOut {
-        animation: fadeout 300ms
+        animation: fadeout 300ms;
       }
       .fadeIn {
         animation: fadein 1s;
@@ -30,7 +30,7 @@
       vds-media:not(:defined) {
         visibility: hidden;
       }
-  </style>
+    </style>
   </head>
   <body>
     <article class="container">
@@ -49,6 +49,12 @@
             <h1>Preshow Banner</h1>
             <div><span data-countdown-clock></span>, <span data-countdown></span></div>
             <div><span data-localDate></span> <span data-localTime></span></div>
+          </section>
+        </div>
+
+        <div slot="holding" class="holding playerblock">
+          <section data-transition>
+            <h2>Waiting for stream to start</h2>
           </section>
         </div>
 
@@ -140,11 +146,23 @@
       <hr />
 
       <h4>Testing</h4>
-      <label>Start <input type="datetime-local" id="start"></label>
-      <label>End <input type="datetime-local" id="end"></label>
-      <button id="setTime">Set</button>
+      <fieldset>
+        <div>
+          <label for="start">Start</label>
+          <input name="start" type="datetime-local" id="start">
+        </div>
+        <div>
+          <label for="end">End</label>
+          <input name="end" type="datetime-local" id="end"></label>
+        </div>
+        <button id="setTime">Set</button>
+      </fieldset>
 
-      <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">30sec Test</button>
+      <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">Quick Test</button>
+
+      <button id="resetLocal">Reset Local Storage</button>
+
+      <button id="releaseHold" title="Simulate the call that the live stream is ready.">Release Hold</button>
 
       <p>Source on <a href="https://github.com/blairliikala/livestreamwrapper">github</a>.</p>
 
@@ -158,93 +176,102 @@
   <script type="module" src="https://cdn.jsdelivr.net/npm/@vidstack/player@next/cdn/bundle.js"></script>
   <script type="module" src="../../livestream-wrapper.js"></script>
 
-<!-- For Testing -->
+
+<!-- For Demo -->
 <script type="module">
 
   function convertToDateInput(date) {
-    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
-    return (new Date(date - tzoffset)).toISOString().split('.')[0];
+    const tzoffset = (new Date()).getTimezoneOffset() * 60000
+    return (new Date(date - tzoffset)).toISOString().split('.')[0]
   }
 
   function addTime(seconds, now = new Date()) {
-    const newStart = now.setTime(now.getTime() + seconds * 1000);
-    return new Date(newStart);
+    const newStart = now.setTime(now.getTime() + seconds * 1000)
+    return new Date(newStart)
   }
 
-  const start = document.querySelector('#start');
-  const end = document.querySelector('#end');
-  const livewrap = document.querySelector('livestream-wrapper');
+  const start = document.querySelector('#start')
+  const end = document.querySelector('#end')
+  const livewrap = document.querySelector('livestream-wrapper')
 
-  const storedStart = localStorage.getItem('start');
-  const storedEnd = localStorage.getItem('end');
+  const storedStart = localStorage.getItem('start')
+  const storedEnd = localStorage.getItem('end')
 
   if (storedStart) {
     console.debug('Setting Start from localstorage.')
-    livewrap.start = storedStart;
+    livewrap.start = storedStart
   }
   if (storedEnd) {
     console.debug('Setting End from localstorage.')
-    livewrap.end = storedEnd;
+    livewrap.end = storedEnd
   }
 
   if (livewrap.start) {
-    const startDate = convertToDateInput(livewrap.start);
-    start.value = startDate;
+    const startDate = convertToDateInput(livewrap.start)
+    start.value = startDate
   }
 
   if (livewrap.end) {
     const endDate = convertToDateInput(livewrap.end)
-    end.value = endDate;
+    end.value = endDate
   }
 
   document.querySelector('#setTime').addEventListener('click', () => {
-    livewrap.start = start.value;
-    livewrap.end = end.value;
-    localStorage.setItem('start', start.value);
-    localStorage.setItem('end', end.value);
-  });
+    livewrap.start = start.value
+    livewrap.end = end.value
+    localStorage.setItem('start', start.value)
+    localStorage.setItem('end', end.value)
+  })
 
   start.addEventListener('change', event => {
-    if (!event.target.value) return;
-    const date = new Date(event.target.value);
-    const endDate = date.setTime(date.getTime() + 60 * 1000);
-    end.value = convertToDateInput(endDate);
-  });
+    if (!event.target.value) return
+    const date = new Date(event.target.value)
+    const endDate = date.setTime(date.getTime() + 60 * 1000)
+    end.value = convertToDateInput(endDate)
+  })
   livewrap.addEventListener('all', event => {
-    console.log(event.detail);
-  });
+    console.log(event.detail)
+  })
 
-  const simpleTest = document.querySelector('#simpleTest');
+  const simpleTest = document.querySelector('#simpleTest')
   simpleTest.addEventListener('click', () => {
-    const now = new Date();
-    const newStart = now.setTime(now.getTime() + 10 * 1000); // +30sec.
+    const now = new Date()
+    const newStart = now.setTime(now.getTime() + 5 * 1000) // +30sec.
 
-    const newStartDate = new Date(newStart);
-    const newEnd = newStartDate.setTime(newStartDate.getTime() + 30 * 1000); // Ends 30sec after.
-    console.log(new Date(newStart), new Date(newEnd));
+    const newStartDate = new Date(newStart)
+    const newEnd = newStartDate.setTime(newStartDate.getTime() + 30 * 1000) // Ends 30sec after.
+    console.log(new Date(newStart), new Date(newEnd))
 
-    start.value = convertToDateInput(new Date(newStart));
-    end.value = convertToDateInput(new Date(newEnd));
+    start.value = convertToDateInput(new Date(newStart))
+    end.value = convertToDateInput(new Date(newEnd))
 
     livewrap.start = new Date(newStart)
     livewrap.end = new Date(newEnd)
 
-  });
+  })
 
+
+  // Reset local storage
+  document.querySelector('#resetLocal')?.addEventListener('click', () => {
+    localStorage.clear()
+    console.log('Localstorage cleared')
+  })
+
+  // Clearing the Hold when Stream is Ready
+  const relaseHoldButton = document.querySelector('#releaseHold')
+  relaseHoldButton.addEventListener('click', () => livewrap.ready = true)
+  if (livewrap.ready) relaseHoldButton.remove()
 
   // Interaction Testing.
   /*
-  const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+  const events = ['mousedown', 'keydown', 'scroll', 'touchstart']
   events.forEach( event => {
     document.addEventListener(event, () => {
-      console.log('Event Fired: '+event);
-      document.querySelector('#hasTapped').innerHTML = "Interacted! "+event;
+      console.log('Event Fired: '+event)
+      document.querySelector('#hasTapped').innerHTML = "Interacted! "+event
     })
   })
   */
-
-
-
 </script>
 
 </html>
