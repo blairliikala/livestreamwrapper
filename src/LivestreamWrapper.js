@@ -19,6 +19,8 @@ export class LiveStreamWrapper extends HTMLElement {
   #isOver = false;
   #isEndOverride = false;
   #hasInteracted = false;
+  #setIsReady = false;
+  #isReady = true;
 
   // Params
   #start; // ISO 8601
@@ -66,7 +68,8 @@ export class LiveStreamWrapper extends HTMLElement {
       'end',
       'duration',
       'live-to-vod',
-      'simulated-live'
+      'simulated-live',
+      'ready'
     ];
   }
 
@@ -93,6 +96,9 @@ export class LiveStreamWrapper extends HTMLElement {
   set simulatedlive(item) {
     this.#simulatedlive = item;
   }
+  set ready(item) {
+    this.#isReady = item;
+  }
   get time() {
     return this.#time;
   }
@@ -110,6 +116,9 @@ export class LiveStreamWrapper extends HTMLElement {
   }
   get simulatedlive() {
     return this.#simulatedlive;
+  }
+  get ready() {
+    return this.#isReady;
   }
 
   connectedCallback() {
@@ -130,6 +139,7 @@ export class LiveStreamWrapper extends HTMLElement {
       <section id="root"></section>
       <slot name="landing"></slot>
       <slot name="preshow"></slot>
+      <slot name="holding"></slot>
       <slot name="live"></slot>
       <slot name="end"></slot>
     `;
@@ -142,8 +152,9 @@ export class LiveStreamWrapper extends HTMLElement {
       root: this.shadowRoot?.querySelector('#root'),
       landing: this.shadowRoot?.querySelector('slot[name=landing]'),
       start: this.shadowRoot?.querySelector('slot[name=preshow]'),
-      end: this.shadowRoot?.querySelector('slot[name=end]'),
+      holding: this.shadowRoot?.querySelector('slot[name=holding]'),
       player: this.shadowRoot?.querySelector('slot[name=live]'),
+      end: this.shadowRoot?.querySelector('slot[name=end]'),
       countdown: this.querySelector('[data-countdown]'),
       countdownClock: this.querySelector('[data-countdown-clock]'),
       localTime: this.querySelector('[data-localtime]'),
@@ -159,8 +170,9 @@ export class LiveStreamWrapper extends HTMLElement {
     this.#start    = this.getAttribute('start') || ''; // Required.
     this.#end      = this.getAttribute('end') || '';
     this.#duration = this.getAttribute('duration') || '';
-    const isLiveToVOD = this.getAttribute('live-to-vod');
-    const simulatedlive = this.getAttribute('simulated-live');
+    this.#isReady       = LiveStreamWrapper.toBool(this.getAttribute('ready'), true);
+    this.#isLiveToVOD   = LiveStreamWrapper.toBool(this.getAttribute('live-to-vod'), false);
+    this.#simulatedlive = LiveStreamWrapper.toBool(this.getAttribute('simulated-live'), false);
 
     if (!this.#start) {
       console.error('A start date is required.');
@@ -202,14 +214,6 @@ export class LiveStreamWrapper extends HTMLElement {
       }
     }
 
-    // attribute boolean fix. live-to-vod="false" will be false.
-    if (isLiveToVOD !== null) {
-      this.#isLiveToVOD = isLiveToVOD === 'true' ? true : false;
-    }
-    if (simulatedlive !== null) {
-      this.#simulatedlive = simulatedlive === 'true' ? true : false;
-    }
-
     if (!this.#end && this.#duration) {
       const end = new Date();
       this.#end = new Date(end.setSeconds(this.#start.getSeconds() + this.#duration));
@@ -247,6 +251,8 @@ export class LiveStreamWrapper extends HTMLElement {
     switch(true) {
       case now > end || this.#isEndOverride:
         return 'end';
+      case now > start && !this.#isReady:
+        return 'holding';
       case now > start:
         return 'live';
       case now < start && !this.#hasInteracted:
@@ -264,6 +270,7 @@ export class LiveStreamWrapper extends HTMLElement {
     if (currentStatus !== this.#state.status) this.#state.previous = this.#state.status;
     this.#state.status = currentStatus;
     if (this.#state.status === 'end') this.setEnd();
+    if (this.#state.status === 'holding') this.setHolding();
     if (this.#state.status === 'live') this.setLive();
     if (this.#state.status === 'pre') this.setStart();
   }
@@ -271,32 +278,54 @@ export class LiveStreamWrapper extends HTMLElement {
   async setLanding() {
     this.#showLanding();
     this.#hidePregame();
+    this.#hideHolding();
     this.#hidePlayer();
     this.#hidePostgame();
   }
 
   async setStart() {
     this.#hideLanding();
+    this.#showPregame();
+    this.#hideHolding();
     this.#hidePlayer();
     this.#hidePostgame();
-    this.#showPregame();
 
     if (!this.#isWaiting) {
-      this.#event('pre', 'Event has not yet started', {});
+      this.#event('pre', 'Event has not yet started.', {});
       // Make sure video is not already playing in background on page load.
       if (this.#getState(this.#start, this.#end) === 'pre') {
         const player = this.querySelector('video');
         if (player) player.pause();
       }
       this.#isWaiting = true;
-      const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
-      if (transition) await LiveStreamWrapper.fadeIn(transition);
+      const incoming = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
+      if (incoming) await LiveStreamWrapper.fadeIn(incoming);
+    }
+  }
+
+  async setHolding() {
+    this.#hideLanding();
+    this.#hidePlayer();
+    this.#hidePostgame();
+
+    if (!this.#setIsReady) {
+      this.#setIsReady = true;
+      this.#event('holding', 'Waiting for the stream to be ready.', {});
+
+      const outgoing = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
+      if (outgoing) await LiveStreamWrapper.fadeOut(outgoing);
+      this.#hidePregame();
+
+      const incoming = LiveStreamWrapper.getTransitionDiv(this.#divs.landing);
+      if (incoming) await LiveStreamWrapper.fadeIn(incoming);
+      this.#showHolding();
     }
   }
 
   async setLive() {
     this.#hideLanding();
     this.#hidePostgame();
+    this.#hideHolding();
 
     if (!this.#isLive) {
       this.#isLive = true;
@@ -309,7 +338,6 @@ export class LiveStreamWrapper extends HTMLElement {
       }
       this.#hidePregame();
       this.#showPlayer();
-      console.log('setting live');
 
       this.#event('live', 'Is Live', {});
       const player = this.querySelector('video');
@@ -337,6 +365,7 @@ export class LiveStreamWrapper extends HTMLElement {
   async setEnd() {
     this.#hideLanding();
     this.#hidePregame();
+    this.#hideHolding();
     if (!this.#isLiveToVOD) {
       this.#hidePlayer();
       this.#showPostgame();
@@ -355,6 +384,7 @@ export class LiveStreamWrapper extends HTMLElement {
         // Remove from DOM. However can't then go back to start and re-play.
         // Clone will break event handlers for a player.
         // return divs[0].remove();
+
         // Try to stop any playing video.
         try {
           const possiblevideo = divs[0].querySelector('video');
@@ -375,6 +405,12 @@ export class LiveStreamWrapper extends HTMLElement {
   }
   #hidePregame() {
     this.#divs.start.classList.add('hidden');
+  }
+  #showHolding() {
+    this.#divs.holding?.classList.remove('hidden');
+  }
+  #hideHolding() {
+    this.#divs.holding.classList.add('hidden');
   }
   #showPlayer() {
     this.#divs.player.classList.remove('hidden');
@@ -451,9 +487,11 @@ export class LiveStreamWrapper extends HTMLElement {
     }
     const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
     const elapsed = d1 - d2;
-    for (const u in units)
-      if (Math.abs(elapsed) > units[u] || u == 'second')
+    for (const u in units) {
+      if (Math.abs(elapsed) > units[u] || u == 'second') {
         return rtf.format(Math.round(elapsed/units[u]),u)
+      }
+    }
   }
 
   static startLocalTime(time) {
@@ -468,8 +506,8 @@ export class LiveStreamWrapper extends HTMLElement {
     const now = new Date().getTime();
     const distance = countDownDate - now;
     const hours = Math.floor(distance / (1000 * 60 * 60 * 24));
-    let mins   = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString();
-    let sec    = Math.floor((distance % (1000 * 60)) / 1000).toString();
+    let mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString();
+    let sec = Math.floor((distance % (1000 * 60)) / 1000).toString();
 
     if (Number(sec) < 10) sec = `0${sec}`;
     if (Number(mins) < 10) mins = `0${mins}`;
@@ -482,19 +520,21 @@ export class LiveStreamWrapper extends HTMLElement {
 
   static isValidDate(d) {
     if (Object.prototype.toString.call(d) === "[object Date]") {
-      if (Number.isNaN(d)) {
-        return false;
-      }
+      if (Number.isNaN(d)) return false;
       return true;
     }
     return false;
   }
 
+  static toBool(value, fallback) {
+    if (value?.toLowerCase() === 'true') return true;
+    if (value?.toLowerCase() === 'false') return false;
+    return fallback || false; // NULL or unknown.
+  }
+
   static getTransitionDiv(shadowDiv) {
     const divs = shadowDiv.assignedElements({flatten: true});
-    if (divs && divs.length > 0) {
-      return divs[0].querySelector('[data-transition]');
-    }
+    if (divs && divs.length > 0) return divs[0].querySelector('[data-transition]');
     return false;
   }
 
@@ -502,21 +542,13 @@ export class LiveStreamWrapper extends HTMLElement {
     if (div.classList.contains('fadeOut')) return Promise.resolve();
     div.classList.add('fadeOut');
     div.classList.remove('fadeIn');
-    return new Promise(resolve => {
-      div.addEventListener('animationend', () => {
-        resolve();
-      });
-    });
+    return new Promise(resolve => div.addEventListener('animationend', () => resolve()));
   }
 
   static fadeIn(div) {
     if (div.classList.contains('fadeIn')) return Promise.resolve();
     div.classList.remove('fadeOut');
     div.classList.add('fadeIn');
-    return new Promise(resolve => {
-      div.addEventListener('animationend', () => {
-        resolve();
-      });
-    });
+    return new Promise(resolve => div.addEventListener('animationend', () => resolve()));
   }
 }
