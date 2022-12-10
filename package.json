@@ -10,7 +10,7 @@
   ],
   "license": "MIT",
   "author": "Blair Liikala (https://blairliikala.com)",
-  "version": "0.0.9",
+  "version": "0.11.0",
   "main": "livestream-wrapper.js",
   "module": "livestream-wrapper.js",
   "repository": {
