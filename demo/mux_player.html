@@ -48,6 +48,12 @@
           </section>
         </div>
 
+        <div slot="holding" class="holding playerblock">
+          <section data-transition>
+            <h2>Waiting for stream to start</h2>
+          </section>
+        </div>        
+
         <div slot="live" class="live playerblock sixteen_by_nine">
           <section data-transition>
             <mux-player
@@ -70,13 +76,29 @@
       <hr />
 
       <h4>Testing</h4>
-      <label>Start <input type="datetime-local" id="start"></label>
-      <label>End <input type="datetime-local" id="end"></label>
-      <button id="setTime">Set</button>
+      <fieldset>
+        <div>
+          <label for="start">Start</label>
+          <input name="start" type="datetime-local" id="start">
+        </div>
+        <div>
+          <label for="end">End</label>
+          <input name="end" type="datetime-local" id="end"></label>
+        </div>
+        <button id="setTime">Set</button>
+      </fieldset>
 
-      <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">30sec Test</button>
+      <button id="simpleTest" title="Set to 30 seconds before start then run for 30 seconds.">Quick Test</button>
 
+      <button id="resetLocal">Reset Local Storage</button>
+
+      <button id="releaseHold" title="Simulate the call that the live stream is ready.">Release Hold</button>
+
+      <p>Source on <a href="https://github.com/blairliikala/livestreamwrapper">github</a>.</p>
+
+      <!--
       <p id="hasTapped"></p>
+      -->
 
     </article>
   </body>
@@ -152,6 +174,7 @@
   })
 
   // Interaction Testing.
+  /*
   const events = [
     'mousedown', 'keydown',
     'scroll', 'touchstart'
@@ -162,12 +185,24 @@
       document.querySelector('#hasTapped').innerHTML = `Interacted! ${event}`;
     })
   })
+  */
 
   const muxplayer = document.querySelector('mux-player');
   if (!muxplayer) console.error('No Mux Player Found for demo.');
   livewrap.addEventListener('live', () => {
     muxplayer.play();
   });
+
+  // Reset local storage
+  document.querySelector('#resetLocal')?.addEventListener('click', () => {
+    localStorage.clear()
+    console.log('Localstorage cleared')
+  })  
+
+  // Clearing the Hold when Stream is Ready
+  const relaseHoldButton = document.querySelector('#releaseHold')
+  relaseHoldButton.addEventListener('click', () => livewrap.ready = true)
+  if (livewrap.ready) relaseHoldButton.remove()  
 
 </script>
 
