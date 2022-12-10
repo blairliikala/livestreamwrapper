@@ -64,3 +64,44 @@ livestream-wrapper {
 .start {
   line-height: 1.5em;
 }
+
+fieldset {
+  margin: 1em 0;
+  border:1px solid rgba(0,0,0,.1);
+  padding: .8em;
+  border-radius: 5px;
+  display: flex;
+  align-items: stretch;
+  gap: 1em;
+}
+
+input {
+  appearance: none;
+  border: 0;
+  color: white;
+  padding: .5em 1em;
+  border-radius: 5px;
+  background: rgba(255,255,255, .2);
+  outline: rgba(255,255,255.5);
+}
+input[type="datetime-local"] {
+  font-family: sans-serif;
+}
+input:hover, input:active, input:focus {
+  cursor: pointer;
+  background: rgba(255,255,255, .4);  
+  outline: 1px solid rgba(255,255,255, .5);
+}
+button {
+  appearance: none;
+  border: 0;
+  color: white;
+  padding: .5em 1em;
+  border-radius: 5px;
+  background: rgba(255,255,255, .2);  
+}
+button:hover, button:active, button:focus {
+  cursor: pointer;
+  background: rgba(255,255,255, .4);
+  outline: 1px solid rgba(255,255,255, .5);
+}
