@@ -1,3 +1,5 @@
+/* eslint-disable grouped-accessor-pairs */
+/* eslint-disable lines-between-class-members */
 export class LiveStreamWrapper extends HTMLElement {
   #isInit = false;
   #divs;
@@ -333,7 +335,7 @@ export class LiveStreamWrapper extends HTMLElement {
 
       if (this.#state.previous === 'pre') {
         const outgoing = LiveStreamWrapper.getTransitionDiv(this.#divs.start);
-        //if (outgoing.classList.contains('fadeOut')) await LiveStreamWrapper.fadeOut(outgoing); // TODO check what happens if no
+        // if (outgoing.classList.contains('fadeOut')) await LiveStreamWrapper.fadeOut(outgoing); // TODO check what happens if no
         await LiveStreamWrapper.fadeOut(outgoing);
       }
       this.#hidePregame();
@@ -357,7 +359,6 @@ export class LiveStreamWrapper extends HTMLElement {
       }
       const transition = LiveStreamWrapper.getTransitionDiv(this.#divs.player);
       if (transition) LiveStreamWrapper.fadeIn(transition);
-      return;
     }
 
   }
@@ -397,30 +398,39 @@ export class LiveStreamWrapper extends HTMLElement {
   #showLanding() {
     this.#divs.landing.classList.remove('hidden');
   }
+
   #hideLanding() {
     this.#divs.landing.classList.add('hidden');
   }
+
   #showPregame() {
     this.#divs.start.classList.remove('hidden');
   }
+
   #hidePregame() {
     this.#divs.start.classList.add('hidden');
   }
+
   #showHolding() {
     this.#divs.holding?.classList.remove('hidden');
   }
+
   #hideHolding() {
     this.#divs.holding.classList.add('hidden');
   }
+
   #showPlayer() {
     this.#divs.player.classList.remove('hidden');
   }
+
   #hidePlayer() {
     this.#divs.player.classList.add('hidden');
   }
+
   #showPostgame() {
     this.#divs.end?.classList.remove('hidden');
   }
+
   #hidePostgame() {
     this.#divs.end.classList.add('hidden');
   }
