@@ -487,6 +487,7 @@ export class LiveStreamWrapper extends HTMLElement {
   }
 
   static getRelativeTimeDistance(d1, d2 = new Date() ) {
+    if (!d1) return '';
     const units = {
       year  : 24 * 60 * 60 * 1000 * 365,
       month : 24 * 60 * 60 * 1000 * 365/12,
@@ -495,13 +496,12 @@ export class LiveStreamWrapper extends HTMLElement {
       minute: 60 * 1000,
       second: 1000
     }
-    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+    
     const elapsed = d1 - d2;
-    for (const u in units) {
-      if (Math.abs(elapsed) > units[u] || u == 'second') {
-        return rtf.format(Math.round(elapsed/units[u]),u)
-      }
-    }
+    const unit = Object.keys(units).find(u => (Math.abs(elapsed) > units[u] || u === 'second'));
+  
+    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+    return rtf.format(Math.round(elapsed/units[unit]), unit);
   }
 
   static startLocalTime(time) {
